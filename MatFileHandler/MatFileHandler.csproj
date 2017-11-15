@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageId>MatFileHandler</PackageId>
+    <Title>A library for reading MATLAB .mat files.</Title>
+    <Authors>Alexander Luzgarev</Authors>
+    <Description>MatFileHandler provides a simple interface for reading MATLAB-produced
+            .mat files (of so-called "Level 5") and extracting the contents of numerical arrays,
+            logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.
+        </Description>
+    <Copyright>Copyright 2017 Alexander Luzgarev</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/mahalex/MatFileHandler/master/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
+    <PackageReleaseNotes>First release.</PackageReleaseNotes>
+    <PackageTags>Matlab</PackageTags>
+    <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
+    <DocumentationFile>bin\Debug\netstandard2.0\MatFileHandler.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CodeAnalysisRuleSet>..\MatFileHandler.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>..\MatFileHandler.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\stylecop.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta004" />
+  </ItemGroup>
+</Project>
