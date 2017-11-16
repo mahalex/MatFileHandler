@@ -97,7 +97,8 @@ namespace MatFileHandler
 
         private static ArrayFlags ReadArrayFlags(DataElement element)
         {
-            var flagData = (element as MiNum<uint>)?.Data ?? throw new HandlerException("Couldn't read array flags.");
+            var flagData = (element as MiNum<uint>)?.Data ??
+                           throw new HandlerException("Unexpected type in array flags.");
             var class_ = (ArrayType)(flagData[0] & 0xff);
             var variableFlags = (flagData[0] >> 8) & 0x0e;
             return new ArrayFlags
@@ -111,7 +112,7 @@ namespace MatFileHandler
         {
             var arrayFlags = ReadArrayFlags(element);
             var flagData = (element as MiNum<uint>)?.Data ??
-                           throw new HandlerException("Couldn't read sparse array flags.");
+                           throw new HandlerException("Unexpected type in sparse array flags.");
             var nzMax = flagData[1];
             return new SparseArrayFlags
             {
@@ -120,9 +121,9 @@ namespace MatFileHandler
             };
         }
 
-        private static int[] ReadDimensionsArray(DataElement element)
+        private static int[] ReadDimensionsArray(MiNum<int> element)
         {
-            return (element as MiNum<int>)?.Data;
+            return element.Data;
         }
 
         private static DataElement ReadData(DataElement element)
@@ -130,9 +131,9 @@ namespace MatFileHandler
             return element;
         }
 
-        private static string ReadName(DataElement element)
+        private static string ReadName(MiNum<sbyte> element)
         {
-            return Encoding.ASCII.GetString((element as MiNum<sbyte>)?.Data.Select(x => (byte)x).ToArray());
+            return Encoding.ASCII.GetString(element.Data.Select(x => (byte)x).ToArray());
         }
 
         private static DataElement ReadNum<T>(Tag tag, BinaryReader reader)
@@ -173,8 +174,8 @@ namespace MatFileHandler
             string name)
         {
             var sparseArrayFlags = ReadSparseArrayFlags(firstElement);
-            var rowIndex = Read(reader) as MiNum<int>;
-            var columnIndex = Read(reader) as MiNum<int>;
+            var rowIndex = Read(reader) as MiNum<int> ?? throw new HandlerException("Unexpected type in row indices of a sparse array.");
+            var columnIndex = Read(reader) as MiNum<int> ?? throw new HandlerException("Unexpected type in column indices of a sparse array.");
             var data = Read(reader);
             if (sparseArrayFlags.ArrayFlags.Variable.HasFlag(Variable.IsLogical))
             {
@@ -182,8 +183,8 @@ namespace MatFileHandler
                     sparseArrayFlags,
                     dimensions,
                     name,
-                    rowIndex?.Data,
-                    columnIndex?.Data,
+                    rowIndex.Data,
+                    columnIndex.Data,
                     data);
             }
             if (sparseArrayFlags.ArrayFlags.Variable.HasFlag(Variable.IsComplex))
@@ -193,8 +194,8 @@ namespace MatFileHandler
                     sparseArrayFlags,
                     dimensions,
                     name,
-                    rowIndex?.Data,
-                    columnIndex?.Data,
+                    rowIndex.Data,
+                    columnIndex.Data,
                     data,
                     imaginaryData);
             }
@@ -205,8 +206,8 @@ namespace MatFileHandler
                         sparseArrayFlags,
                         dimensions,
                         name,
-                        rowIndex?.Data,
-                        columnIndex?.Data,
+                        rowIndex.Data,
+                        columnIndex.Data,
                         data);
                 default:
                     throw new NotSupportedException("Only double and logical sparse arrays are supported.");
@@ -272,9 +273,9 @@ namespace MatFileHandler
             {
                 return ContinueReadingNewObject();
             }
-            var element2 = Read(reader);
+            var element2 = Read(reader) as MiNum<int> ?? throw new HandlerException("Unexpected type in array dimensions data.");
             var dimensions = ReadDimensionsArray(element2);
-            var element3 = Read(reader);
+            var element3 = Read(reader) as MiNum<sbyte> ?? throw new HandlerException("Unexpected type in array name.");
             var name = ReadName(element3);
             if (flags.Class == ArrayType.MxCell)
             {
@@ -294,9 +295,9 @@ namespace MatFileHandler
             }
             if (flags.Class == ArrayType.MxStruct)
             {
-                var fieldNameLengthData = (data as MiNum<int>)?.Data ??
-                                          throw new HandlerException("Couldn't read structure field name length.");
-                return ContinueReadingStructure(reader, flags, dimensions, name, fieldNameLengthData[0]);
+                var fieldNameLengthElement = data as MiNum<int> ??
+                                             throw new HandlerException("Unexpected type in structure field name length.");
+                return ContinueReadingStructure(reader, flags, dimensions, name, fieldNameLengthElement.Data[0]);
             }
             switch (flags.Class)
             {
