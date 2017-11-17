@@ -524,7 +524,7 @@ namespace MatFileHandler
 
         private void WriteStructureArrayValues(BinaryWriter writer, IStructureArray array)
         {
-            for (var i = 0; i < array.NumberOfElements; i++)
+            for (var i = 0; i < array.Count; i++)
             {
                 foreach (var name in array.FieldNames)
                 {
@@ -556,7 +556,7 @@ namespace MatFileHandler
 
         private void WriteCellArrayValues(BinaryWriter writer, ICellArray array)
         {
-            for (var i = 0; i < array.NumberOfElements; i++)
+            for (var i = 0; i < array.Count; i++)
             {
                 WriteArray(writer, array[i]);
             }

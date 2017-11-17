@@ -20,9 +20,9 @@ namespace MatFileHandler
         int[] Dimensions { get; }
 
         /// <summary>
-        /// Gets the number of elements in the array.
+        /// Gets the total number of elements in the array.
         /// </summary>
-        int NumberOfElements { get; }
+        int Count { get; }
 
         /// <summary>
         /// Tries to convert the array to an array of Double values.

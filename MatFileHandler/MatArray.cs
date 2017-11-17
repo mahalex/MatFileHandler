@@ -34,7 +34,7 @@ namespace MatFileHandler
         public string Name { get; }
 
         /// <inheritdoc />
-        public int NumberOfElements => Dimensions.NumberOfElements();
+        public int Count => Dimensions.NumberOfElements();
 
         /// <inheritdoc />
         public bool IsEmpty => Dimensions.Length == 0;

@@ -241,7 +241,7 @@ namespace MatFileHandler.Tests
             Assert.That(expected.FieldNames, Is.EquivalentTo(actual.FieldNames));
             foreach (var name in expected.FieldNames)
             {
-                for (var i = 0; i < expected.NumberOfElements; i++)
+                for (var i = 0; i < expected.Count; i++)
                 {
                     CompareMatArrays(expected[name, i], actual[name, i]);
                 }
@@ -252,7 +252,7 @@ namespace MatFileHandler.Tests
         {
             Assert.That(actual, Is.Not.Null);
             Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
-            for (var i = 0; i < expected.NumberOfElements; i++)
+            for (var i = 0; i < expected.Count; i++)
             {
                 CompareMatArrays(expected[i], actual[i]);
             }

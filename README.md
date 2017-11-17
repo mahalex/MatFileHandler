@@ -40,7 +40,7 @@ public interface IArray
 {
     bool IsEmpty { get; }
     int[] Dimensions { get; }
-    int NumberOfElements { get; }
+    int Count { get; }
     double[] ConvertToDoubleArray();
     System.Numerics.Complex[] ConvertToDoubleArray();
 }
