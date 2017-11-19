@@ -45,11 +45,11 @@ public interface IArray
     int[] Dimensions { get; }
     int Count { get; }
     double[] ConvertToDoubleArray();
-    System.Numerics.Complex[] ConvertToDoubleArray();
+    System.Numerics.Complex[] ConvertToComplexArray();
 }
 ```
 
-Note that `Dimensions` is a list, since all arrays in MATLAB are (at least potentially) multi-dimensional. However, `ConvertToDoubleArray()` and `ConvertToDoubleArray()` return flat arrays, arranging all multi-dimensional data in columns (MATLAB-style). This functions return `null` if conversion failed (for example, if you tried to apply it to a structure array, or cell array). 
+Note that `Dimensions` is a list, since all arrays in MATLAB are (at least potentially) multi-dimensional. However, `ConvertToDoubleArray()` and `ConvertToComplexArray()` return flat arrays, arranging all multi-dimensional data in columns (MATLAB-style). This functions return `null` if conversion failed (for example, if you tried to apply it to a structure array, or cell array). 
 
 ## Numerical and logical arrays
 
