@@ -1,5 +1,8 @@
 # MatFileHandler
 
+This document briefly describes how to perform simple operations with .mat files using MatFileHandler.
+If you have questions and/or ideas, you can [file a new issue](https://github.com/mahalex/MatFileHandler/issues/new) or contact me directly at <mahalex@gmail.com>.
+
 ## Reading a .mat file
 
 ```csharp
