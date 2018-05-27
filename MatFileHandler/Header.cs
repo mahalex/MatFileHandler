@@ -80,6 +80,9 @@ namespace MatFileHandler
 
         private static string GetOperatingSystem()
         {
+#if NET461
+            return "Windows";
+#else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return "Windows";
@@ -93,6 +96,7 @@ namespace MatFileHandler
                 return "Linux";
             }
             return "Unknown";
+#endif
         }
     }
 }

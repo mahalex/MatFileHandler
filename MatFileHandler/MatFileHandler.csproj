@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <PackageVersion>1.0.0</PackageVersion>
     <PackageId>MatFileHandler</PackageId>
     <Title>A library for reading and writing MATLAB .mat files.</Title>
@@ -13,7 +13,7 @@
     <PackageTags>Matlab</PackageTags>
     <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <DocumentationFile>$(OutputPath)\MatFileHandler.xml</DocumentationFile>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -29,5 +29,6 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta004">
             <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="'$(TargetFramework)' == 'net461'" />
   </ItemGroup>
 </Project>
