@@ -13,6 +13,7 @@
     <PackageTags>Matlab</PackageTags>
     <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
     <DocumentationFile>bin\Debug\netstandard2.0\MatFileHandler.xml</DocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <CodeAnalysisRuleSet>..\MatFileHandler.ruleset</CodeAnalysisRuleSet>
