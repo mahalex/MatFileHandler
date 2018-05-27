@@ -12,7 +12,8 @@
     <PackageReleaseNotes>First release.</PackageReleaseNotes>
     <PackageTags>Matlab</PackageTags>
     <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
-    <DocumentationFile>bin\Debug\netstandard2.0\MatFileHandler.xml</DocumentationFile>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DocumentationFile>$(OutputPath)\MatFileHandler.xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
