@@ -6,7 +6,7 @@
     <Title>A library for reading and writing MATLAB .mat files.</Title>
     <Authors>Alexander Luzgarev</Authors>
     <Description>MatFileHandler provides a simple interface for reading and writing MATLAB .mat files (of so-called "Level 5") and extracting the contents of numerical arrays, logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.</Description>
-    <Copyright>Copyright 2017 Alexander Luzgarev</Copyright>
+    <Copyright>Copyright 2017-2018 Alexander Luzgarev</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/mahalex/MatFileHandler/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
     <PackageReleaseNotes>First release.</PackageReleaseNotes>
