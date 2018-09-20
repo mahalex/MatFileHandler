@@ -124,6 +124,10 @@ using (var fileStream = new System.IO.FileStream("output.mat", System.IO.FileMod
     writer.Write(matFile);
 }
 ```
+By default, all variables are written in a compressed format; you can turn that off by using another constructor for `MatFileWriter`:
+```csharp
+var writer = new MatFileWriter(fileStream, new MatFileWriterOptions { UseCompression = CompressionUsage.Never });
+```
 
 Another option is to create a file from scratch. You can do it with `DataBuilder` class:
 
