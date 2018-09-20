@@ -376,13 +376,17 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void MatCompareWithTestData(string factoryName, string testName, IMatFile actual)
+        private void CompareTestDataWithWritingOptions(
+            IMatFile expected,
+            IMatFile actual,
+            MatFileWriterOptions? maybeOptions)
         {
-            var expected = GetMatTestData(factoryName)[testName];
             byte[] buffer;
             using (var stream = new MemoryStream())
             {
-                var writer = new MatFileWriter(stream);
+                var writer = maybeOptions is MatFileWriterOptions options
+                    ? new MatFileWriter(stream, options)
+                    : new MatFileWriter(stream);
                 writer.Write(actual);
                 buffer = stream.ToArray();
             }
@@ -392,6 +396,20 @@ namespace MatFileHandler.Tests
                 var actualRead = reader.Read();
                 CompareMatFiles(expected, actualRead);
             }
+        }
+
+        private void MatCompareWithTestData(string factoryName, string testName, IMatFile actual)
+        {
+            var expected = GetMatTestData(factoryName)[testName];
+            CompareTestDataWithWritingOptions(expected, actual, null);
+            CompareTestDataWithWritingOptions(
+                expected,
+                actual,
+                new MatFileWriterOptions { UseCompression = CompressionUsage.Always });
+            CompareTestDataWithWritingOptions(
+                expected,
+                actual,
+                new MatFileWriterOptions { UseCompression = CompressionUsage.Never });
         }
 
         private ComplexOf<T>[] CreateComplexLimits<T>(T[] limits)

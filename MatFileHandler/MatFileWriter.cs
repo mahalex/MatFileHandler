@@ -15,13 +15,27 @@ namespace MatFileHandler
     /// </summary>
     public class MatFileWriter
     {
+        private readonly MatFileWriterOptions _options;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="MatFileWriter"/> class with a stream.
+        /// Initializes a new instance of the <see cref="MatFileWriter"/> class with a stream and default options.
         /// </summary>
         /// <param name="stream">Output stream.</param>
         public MatFileWriter(Stream stream)
         {
             Stream = stream;
+            _options = MatFileWriterOptions.Default;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MatFileWriter"/> class with a stream.
+        /// </summary>
+        /// <param name="stream">Output stream.</param>
+        /// <param name="options">Options to use for file writing.</param>
+        public MatFileWriter(Stream stream, MatFileWriterOptions options)
+        {
+            Stream = stream;
+            _options = options;
         }
 
         private Stream Stream { get; }
@@ -38,7 +52,17 @@ namespace MatFileHandler
                 WriteHeader(writer, header);
                 foreach (var variable in file.Variables)
                 {
-                    WriteCompressedVariable(writer, variable);
+                    switch (_options.UseCompression)
+                    {
+                        case CompressionUsage.Always:
+                            WriteCompressedVariable(writer, variable);
+                            break;
+                        case CompressionUsage.Never:
+                            WriteVariable(writer, variable);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
         }
