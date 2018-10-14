@@ -326,6 +326,9 @@ namespace MatFileHandler.Tests
             Assert.That(obj[2]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
         }
 
+        /// <summary>
+        /// Test reading a table.
+        /// </summary>
         [Test]
         public void TestTable()
         {
