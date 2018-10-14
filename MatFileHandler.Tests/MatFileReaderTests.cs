@@ -326,6 +326,24 @@ namespace MatFileHandler.Tests
             Assert.That(obj[2]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
         }
 
+        [Test]
+        public void TestTable()
+        {
+            var matFile = GetTests("good")["table"];
+            var obj = matFile["table_"].Value as IMatObject;
+            var table = new TableAdapter(obj);
+            Assert.That(table.NumberOfRows, Is.EqualTo(3));
+            Assert.That(table.NumberOfVariables, Is.EqualTo(2));
+            Assert.That(table.Description, Is.EqualTo("Some table"));
+            Assert.That(table.VariableNames, Is.EqualTo(new[] { "variable1", "variable2" }));
+            var variable1 = table["variable1"] as ICellArray;
+            Assert.That((variable1[0] as ICharArray).String, Is.EqualTo("First row"));
+            Assert.That((variable1[1] as ICharArray).String, Is.EqualTo("Second row"));
+            Assert.That((variable1[2] as ICharArray).String, Is.EqualTo("Third row"));
+            var variable2 = table["variable2"];
+            Assert.That(variable2.ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0, 3.0, 5.0, 2.0, 4.0, 6.0 }));
+        }
+
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
             new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 
