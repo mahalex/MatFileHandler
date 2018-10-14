@@ -292,7 +292,38 @@ namespace MatFileHandler.Tests
         [Test]
         public void TestObject()
         {
-            Assert.That(() => GetTests("bad")["object"], Throws.TypeOf<HandlerException>());
+            var matFile = GetTests("good")["object"];
+            var obj = matFile["object_"].Value as IMatObject;
+            Assert.IsNotNull(obj);
+            Assert.That(obj.ClassName, Is.EqualTo("Point"));
+            Assert.That(obj.FieldNames, Is.EquivalentTo(new[] { "x", "y" }));
+            Assert.That(obj["x", 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 3.0 }));
+            Assert.That(obj["y", 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 5.0 }));
+            Assert.That(obj["x", 1].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
+            Assert.That(obj["y", 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 6.0 }));
+        }
+
+        /// <summary>
+        /// Test reading another object.
+        /// </summary>
+        [Test]
+        public void TestObject2()
+        {
+            var matFile = GetTests("good")["object2"];
+            var obj = matFile["object2"].Value as IMatObject;
+            Assert.IsNotNull(obj);
+            Assert.That(obj.ClassName, Is.EqualTo("Point"));
+            Assert.That(obj.FieldNames, Is.EquivalentTo(new[] { "x", "y" }));
+            Assert.That(obj["x", 0, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 3.0 }));
+            Assert.That(obj["y", 0, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 5.0 }));
+            Assert.That(obj["x", 1, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0 }));
+            Assert.That(obj["y", 1, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 0.0 }));
+            Assert.That(obj["x", 0, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
+            Assert.That(obj["y", 0, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 6.0 }));
+            Assert.That(obj["x", 1, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 0.0 }));
+            Assert.That(obj["y", 1, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0 }));
+            Assert.That(obj[0, 1]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
+            Assert.That(obj[2]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
         }
 
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>

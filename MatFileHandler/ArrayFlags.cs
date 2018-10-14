@@ -85,9 +85,9 @@ namespace MatFileHandler
         MxUInt64 = 15,
 
         /// <summary>
-        /// Undocumented object (?) array type.
+        /// Undocumented opaque object type.
         /// </summary>
-        MxNewObject = 17,
+        MxOpaque = 17,
     }
 
     /// <summary>
