@@ -20,11 +20,11 @@ steps:
     projects: '**/*Tests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
     
-- task: NuGetCommand@2
-  displayName: 'nuget pack'
+- task: DotNetCoreCLI@2
   inputs:
-    command: pack
+    command: 'pack'
     packagesToPack: '**/*.csproj'
+    configuration: 'release'
 
 - task: PublishBuildArtifacts@1
   displayName: 'publish artifacts'
