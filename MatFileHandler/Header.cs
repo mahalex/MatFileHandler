@@ -1,4 +1,4 @@
-﻿// Copyright 2017 Alexander Luzgarev
+﻿// Copyright 2017-2018 Alexander Luzgarev
 
 using System;
 using System.Globalization;
@@ -13,7 +13,7 @@ namespace MatFileHandler
     /// </summary>
     internal class Header
     {
-        private Header(string text, byte[] subsystemDataOffset, int version)
+        private Header(string text, long subsystemDataOffset, int version)
         {
             Text = text;
             SubsystemDataOffset = subsystemDataOffset;
@@ -28,7 +28,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets subsystem data offset.
         /// </summary>
-        public byte[] SubsystemDataOffset { get; }
+        public long SubsystemDataOffset { get; }
 
         /// <summary>
         /// Gets file version.
@@ -55,7 +55,7 @@ namespace MatFileHandler
                 platform = platform.Remove(length);
             }
             var text = $"MATLAB 5.0 MAT-file, Platform: {platform}, Created on: {dateTime}{padding}";
-            return new Header(text, subsystemDataOffset, 256);
+            return new Header(text, 0, 256);
         }
 
         /// <summary>
@@ -67,7 +67,8 @@ namespace MatFileHandler
         {
             var textBytes = reader.ReadBytes(116);
             var text = System.Text.Encoding.UTF8.GetString(textBytes);
-            var subsystemDataOffset = reader.ReadBytes(8);
+            var subsystemDataOffsetBytes = reader.ReadBytes(8);
+            var subsystemDataOffset = BitConverter.ToInt64(subsystemDataOffsetBytes, 0);
             var version = reader.ReadInt16();
             var endian = reader.ReadInt16();
             var isLittleEndian = endian == 19785;

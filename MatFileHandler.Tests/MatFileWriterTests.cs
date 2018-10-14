@@ -1,4 +1,4 @@
-﻿// Copyright 2017 Alexander Luzgarev
+﻿// Copyright 2017-2018 Alexander Luzgarev
 
 using System;
 using System.IO;
