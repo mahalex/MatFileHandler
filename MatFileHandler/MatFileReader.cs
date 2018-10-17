@@ -35,15 +35,19 @@ namespace MatFileHandler
         }
 
         /// <summary>
-        /// Read raw variables from a .mat file.
+        /// Read a sequence of raw variables from .mat file.
         /// </summary>
-        /// <param name="reader">Binary reader.</param>
-        /// <param name="subsystemDataOffset">Offset to the subsystem data to use (read from the file header).</param>
-        /// <returns>Raw variables read.</returns>
-        internal static List<RawVariable> ReadRawVariables(BinaryReader reader, long subsystemDataOffset)
+        /// <param name="reader">Reader.</param>
+        /// <param name="subsystemDataOffset">Offset of subsystem data in the file;
+        /// we need it because we may encounter it during reading, and
+        /// the subsystem data should be parsed in a special way.</param>
+        /// <param name="subsystemData">
+        /// Link to the current file's subsystem data structure; initially it has dummy value
+        /// which will be replaced after we parse the whole subsystem data.</param>
+        /// <returns>List of "raw" variables; the actual variables are constructed from them later.</returns>
+        internal static List<RawVariable> ReadRawVariables(BinaryReader reader, long subsystemDataOffset, SubsystemData subsystemData)
         {
             var variables = new List<RawVariable>();
-            var subsystemData = new SubsystemData();
             var dataElementReader = new DataElementReader(subsystemData);
             while (true)
             {
@@ -54,7 +58,8 @@ namespace MatFileHandler
                     if (position == subsystemDataOffset)
                     {
                         var subsystemDataElement = dataElement as IArrayOf<byte>;
-                        subsystemData.Set(ReadSubsystemData(subsystemDataElement.Data));
+                        var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
+                        subsystemData.Set(newSubsystemData);
                     }
                     else
                     {
@@ -68,6 +73,18 @@ namespace MatFileHandler
             }
 
             return variables;
+        }
+
+        /// <summary>
+        /// Read raw variables from a .mat file.
+        /// </summary>
+        /// <param name="reader">Binary reader.</param>
+        /// <param name="subsystemDataOffset">Offset to the subsystem data to use (read from the file header).</param>
+        /// <returns>Raw variables read.</returns>
+        internal static List<RawVariable> ReadRawVariables(BinaryReader reader, long subsystemDataOffset)
+        {
+            var subsystemData = new SubsystemData();
+            return ReadRawVariables(reader, subsystemDataOffset, subsystemData);
         }
 
         private static IMatFile Read(BinaryReader reader)
@@ -97,9 +114,9 @@ namespace MatFileHandler
             return Header.Read(reader);
         }
 
-        private static SubsystemData ReadSubsystemData(byte[] bytes)
+        private static SubsystemData ReadSubsystemData(byte[] bytes, SubsystemData subsystemData)
         {
-            return SubsystemDataReader.Read(bytes);
+            return SubsystemDataReader.Read(bytes, subsystemData);
         }
     }
 }

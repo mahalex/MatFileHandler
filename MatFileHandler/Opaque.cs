@@ -37,7 +37,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets class name of the opaque object.
         /// </summary>
-        public string ClassName { get; }
+        public virtual string ClassName { get; }
 
         /// <summary>
         /// Gets raw object's data: either links to subsystem data, or actual data.

@@ -17,8 +17,11 @@ namespace MatFileHandler
         /// Read subsystem data from a given byte array.
         /// </summary>
         /// <param name="bytes">Byte array with the data.</param>
+        /// <param name="subsystemData">
+        /// Link to the existing subsystem data; this will be put in nested OpaqueLink objects
+        /// and later replaced with the subsystem data that we are currently reading.</param>
         /// <returns>Subsystem data read.</returns>
-        public static SubsystemData Read(byte[] bytes)
+        public static SubsystemData Read(byte[] bytes, SubsystemData subsystemData)
         {
             List<RawVariable> rawVariables = null;
             using (var stream = new MemoryStream(bytes))
@@ -26,7 +29,7 @@ namespace MatFileHandler
                 using (var reader = new BinaryReader(stream))
                 {
                     reader.ReadBytes(8);
-                    rawVariables = MatFileReader.ReadRawVariables(reader, -1);
+                    rawVariables = MatFileReader.ReadRawVariables(reader, -1, subsystemData);
                 }
             }
 
@@ -38,55 +41,152 @@ namespace MatFileHandler
             var (offsets, position) = ReadOffsets(info, 0);
             var fieldNames = ReadFieldNames(info, position, offsets[1]);
             var numberOfClasses = ((offsets[3] - offsets[2]) / 16) - 1;
-            SubsystemData.ClassInfo[] classInformation = null;
+            Dictionary<int, string> classIdToName = null;
             using (var stream = new MemoryStream(info, offsets[2], offsets[3] - offsets[2]))
             {
                 using (var reader = new BinaryReader(stream))
                 {
-                    classInformation = ReadClassInformation(reader, fieldNames, numberOfClasses);
+                    classIdToName = ReadClassNames(reader, fieldNames, numberOfClasses);
                 }
             }
+
             var numberOfObjects = ((offsets[5] - offsets[4]) / 24) - 1;
-            SubsystemData.ObjectInfo[] objectInformation = null;
+            Dictionary<int, (int, int)> objectClasses = null;
+            using (var stream = new MemoryStream(info, offsets[4], offsets[5] - offsets[4]))
+            {
+                using (var reader = new BinaryReader(stream))
+                {
+                    objectClasses = ReadObjectClasses(reader, numberOfObjects);
+                }
+            }
+
+            Dictionary<int, Dictionary<int, int>> objectToFields = null;
             using (var stream = new MemoryStream(info, offsets[5], offsets[6] - offsets[5]))
             {
                 using (var reader = new BinaryReader(stream))
                 {
-                    objectInformation = ReadObjectInformation(reader, numberOfObjects);
+                    objectToFields = ReadObjectToFieldsMapping(reader, numberOfObjects);
                 }
             }
 
-            var allFields = objectInformation.SelectMany(obj => obj.FieldLinks.Values);
+            var (classInformation, objectInformation) =
+                GatherClassAndObjectInformation(
+                    classIdToName,
+                    fieldNames,
+                    objectClasses,
+                    objectToFields);
+
+            var allFields = objectInformation.Values.SelectMany(obj => obj.FieldLinks.Values);
             var data = new Dictionary<int, IArray>();
             foreach (var i in allFields)
             {
-                data[i] = opaqueData[i + 2];
+                data[i] = TransformOpaqueData(opaqueData[i + 2], subsystemData);
             }
             return new SubsystemData(classInformation, objectInformation, data);
         }
 
-        private static SubsystemData.ObjectInfo ReadObjectInformation(BinaryReader reader)
+        private static IArray TransformOpaqueData(IArray array, SubsystemData subsystemData)
+        {
+            if (array is MatNumericalArrayOf<uint> uintArray)
+            {
+                if (uintArray.Data[0] == 3707764736u)
+                {
+                    var (dimensions, indexToObjectId, classIndex) = DataElementReader.ParseOpaqueData(uintArray.Data);
+                    return new OpaqueLink(
+                        uintArray.Name,
+                        string.Empty,
+                        string.Empty,
+                        dimensions,
+                        array as DataElement,
+                        indexToObjectId,
+                        classIndex,
+                        subsystemData);
+                }
+            }
+
+            return array;
+        }
+
+        private static Dictionary<int, (int, int)> ReadObjectClasses(BinaryReader reader, int numberOfObjects)
+        {
+            var result = new Dictionary<int, (int, int)>();
+            reader.ReadBytes(24);
+            for (var i = 0; i < numberOfObjects; i++)
+            {
+                var classId = reader.ReadInt32();
+                reader.ReadBytes(12);
+                var objectPosition = reader.ReadInt32();
+                var objectId = reader.ReadInt32();
+                result[objectPosition] = (objectId, classId);
+            }
+
+            return result;
+        }
+
+        private static (Dictionary<int, SubsystemData.ClassInfo>, Dictionary<int, SubsystemData.ObjectInfo>) GatherClassAndObjectInformation(
+            Dictionary<int, string> classIdToName,
+            string[] fieldNames,
+            Dictionary<int, (int, int)> objectClasses,
+            Dictionary<int, Dictionary<int, int>> objectToFields)
+        {
+            var classInfos = new Dictionary<int, SubsystemData.ClassInfo>();
+            foreach (var classId in classIdToName.Keys)
+            {
+                var className = classIdToName[classId];
+                var fieldIds = new SortedSet<int>();
+                foreach (var objectPosition in objectToFields.Keys)
+                {
+                    var (_, thisObjectClassId) = objectClasses[objectPosition];
+                    if (thisObjectClassId != classId)
+                    {
+                        continue;
+                    }
+
+                    foreach (var fieldId in objectToFields[objectPosition].Keys)
+                    {
+                        fieldIds.Add(fieldId);
+                    }
+                }
+                var fieldToIndex = new Dictionary<string, int>();
+                foreach (var fieldId in fieldIds)
+                {
+                    fieldToIndex[fieldNames[fieldId - 1]] = fieldId;
+                }
+                classInfos[classId] = new SubsystemData.ClassInfo(className, fieldToIndex);
+            }
+
+            var objectInfos = new Dictionary<int, SubsystemData.ObjectInfo>();
+            foreach (var objectPosition in objectToFields.Keys)
+            {
+                var (objectId, _) = objectClasses[objectPosition];
+                objectInfos[objectId] = new SubsystemData.ObjectInfo(objectPosition, objectToFields[objectPosition]);
+            }
+
+            return (classInfos, objectInfos);
+        }
+
+        private static Dictionary<int, int> ReadFieldToFieldDataMapping(BinaryReader reader)
         {
             var length = reader.ReadInt32();
-            var fieldLinks = new Dictionary<int, int>();
+            var result = new Dictionary<int, int>();
             for (var i = 0; i < length; i++)
             {
                 var x = reader.ReadInt32();
                 var y = reader.ReadInt32();
                 var index = x * y;
                 var link = reader.ReadInt32();
-                fieldLinks[index] = link;
+                result[index] = link;
             }
-            return new SubsystemData.ObjectInfo(fieldLinks);
+            return result;
         }
 
-        private static SubsystemData.ObjectInfo[] ReadObjectInformation(BinaryReader reader, int numberOfObjects)
+        private static Dictionary<int, Dictionary<int, int>> ReadObjectToFieldsMapping(BinaryReader reader, int numberOfObjects)
         {
-            var result = new SubsystemData.ObjectInfo[numberOfObjects];
+            var result = new Dictionary<int, Dictionary<int, int>>();
             reader.ReadBytes(8);
-            for (var objectIndex = 0; objectIndex < numberOfObjects; objectIndex++)
+            for (var objectPosition = 1; objectPosition <= numberOfObjects; objectPosition++)
             {
-                result[objectIndex] = ReadObjectInformation(reader);
+                result[objectPosition] = ReadFieldToFieldDataMapping(reader);
                 var position = reader.BaseStream.Position;
                 if (position % 8 != 0)
                 {
@@ -96,12 +196,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static SubsystemData.ClassInfo[] ReadClassInformation(
+        private static Dictionary<int, string> ReadClassNames(
             BinaryReader reader,
             string[] fieldNames,
             int numberOfClasses)
         {
-            var result = new SubsystemData.ClassInfo[numberOfClasses];
+            var result = new Dictionary<int, string>();
             var indices = new int[numberOfClasses + 1];
             for (var i = 0; i <= numberOfClasses; i++)
             {
@@ -113,11 +213,7 @@ namespace MatFileHandler
 
             for (var i = 0; i < numberOfClasses; i++)
             {
-                var numberOfFields = indices[i + 1] - indices[i] - 1;
-                var names = new string[numberOfFields];
-                Array.Copy(fieldNames, indices[i], names, 0, numberOfFields);
-                var className = fieldNames[indices[i + 1] - 1];
-                result[i] = new SubsystemData.ClassInfo(className, names);
+                result[i + 1] = fieldNames[indices[i + 1] - 1];
             }
 
             return result;

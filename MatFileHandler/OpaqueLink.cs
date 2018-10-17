@@ -22,7 +22,7 @@ namespace MatFileHandler
         /// <param name="className">Name of the object's class.</param>
         /// <param name="dimensions">Dimensions of the object.</param>
         /// <param name="data">Raw data containing links to object's storage.</param>
-        /// <param name="links">Links to object's storage.</param>
+        /// <param name="indexToObjectId">Links to object's storage.</param>
         /// <param name="classIndex">Index of object's class.</param>
         /// <param name="subsystemData">Reference to global subsystem data.</param>
         public OpaqueLink(
@@ -31,12 +31,12 @@ namespace MatFileHandler
             string className,
             int[] dimensions,
             DataElement data,
-            int[] links,
+            int[] indexToObjectId,
             int classIndex,
             SubsystemData subsystemData)
             : base(name, typeDescription, className, dimensions, data)
         {
-            Links = links ?? throw new ArgumentNullException(nameof(links));
+            IndexToObjectId = indexToObjectId ?? throw new ArgumentNullException(nameof(indexToObjectId));
             ClassIndex = classIndex;
             this.subsystemData = subsystemData ?? throw new ArgumentNullException(nameof(subsystemData));
         }
@@ -55,9 +55,14 @@ namespace MatFileHandler
         /// <summary>
         /// Gets links to the fields stored in subsystem data.
         /// </summary>
-        public int[] Links { get; }
+        public int[] IndexToObjectId { get; }
 
-        private string[] FieldNamesArray => subsystemData.ClassInformation[ClassIndex - 1].FieldNames.ToArray();
+        /// <summary>
+        /// Gets name of this object's class.
+        /// </summary>
+        public override string ClassName => subsystemData.ClassInformation[ClassIndex].Name;
+
+        private string[] FieldNamesArray => subsystemData.ClassInformation[ClassIndex].FieldNames.ToArray();
 
         /// <inheritdoc />
         public IArray this[string field, params int[] list]
@@ -89,21 +94,23 @@ namespace MatFileHandler
         private bool TryGetValue(string field, out IArray output, params int[] list)
         {
             var index = Dimensions.DimFlatten(list);
-            var maybeFieldIndex = subsystemData.ClassInformation[ClassIndex - 1].FindField(field);
+            var maybeFieldIndex = subsystemData.ClassInformation[ClassIndex].FindField(field);
             if (!(maybeFieldIndex is int fieldIndex))
             {
                 output = default(IArray);
                 return false;
             }
 
-            if (index >= subsystemData.ObjectInformation.Length)
+            if (index >= IndexToObjectId.Length)
             {
                 output = default(IArray);
                 return false;
             }
 
-            var dataIndex = subsystemData.ObjectInformation[index].FieldLinks[fieldIndex + 1];
-            output = subsystemData.Data[dataIndex];
+            var objectPosition = IndexToObjectId[index];
+            var objectInfo = subsystemData.ObjectInformation.First(pair => pair.Value.Position == objectPosition).Value;
+            var fieldId = objectInfo.FieldLinks[fieldIndex];
+            output = subsystemData.Data[fieldId];
             return true;
         }
 

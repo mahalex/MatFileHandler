@@ -90,14 +90,19 @@ namespace MatFileHandler
             return result;
         }
 
-        private static (int[] dimensions, int[] links, int classIndex) ParseOpaqueData(MatNumericalArrayOf<uint> data)
+        /// <summary>
+        /// Parse opaque link data.
+        /// </summary>
+        /// <param name="data">Opaque link data.</param>
+        /// <returns>Dimensions array, links array, class index.</returns>
+        internal static (int[] dimensions, int[] links, int classIndex) ParseOpaqueData(uint[] data)
         {
-            var nDims = data.Data[1];
+            var nDims = data[1];
             var dimensions = new int[nDims];
             var position = 2;
             for (var i = 0; i < nDims; i++)
             {
-                dimensions[i] = (int)data.Data[position];
+                dimensions[i] = (int)data[position];
                 position++;
             }
 
@@ -105,11 +110,11 @@ namespace MatFileHandler
             var links = new int[count];
             for (var i = 0; i < count; i++)
             {
-                links[i] = (int)data.Data[position];
+                links[i] = (int)data[position];
                 position++;
             }
 
-            var classIndex = (int)data.Data[position];
+            var classIndex = (int)data[position];
 
             return (dimensions, links, classIndex);
         }
@@ -239,14 +244,14 @@ namespace MatFileHandler
             var data = ReadData(dataElement);
             if (data is MatNumericalArrayOf<uint> linkElement)
             {
-                var (dimensions, links, classIndex) = ParseOpaqueData(linkElement);
+                var (dimensions, indexToObjectId, classIndex) = ParseOpaqueData(linkElement.Data);
                 return new OpaqueLink(
                     name,
                     typeDescription,
                     className,
                     dimensions,
                     data,
-                    links,
+                    indexToObjectId,
                     classIndex,
                     subsystemData);
             }

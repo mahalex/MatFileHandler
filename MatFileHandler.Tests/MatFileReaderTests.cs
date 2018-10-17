@@ -347,6 +347,47 @@ namespace MatFileHandler.Tests
             Assert.That(variable2.ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0, 3.0, 5.0, 2.0, 4.0, 6.0 }));
         }
 
+        /// <summary>
+        /// Test subobjects within objects.
+        /// </summary>
+        [Test]
+        public void TestSubobjects()
+        {
+            var matFile = GetTests("good")["pointWithSubpoints"];
+            var p = matFile["p"].Value as IMatObject;
+            Assert.That(p.ClassName, Is.EqualTo("Point"));
+            var x = p["x"] as IMatObject;
+            Assert.That(x.ClassName, Is.EqualTo("SubPoint"));
+            Assert.That(x.FieldNames, Is.EquivalentTo(new[] { "a", "b", "c" }));
+            var y = p["y"] as IMatObject;
+            Assert.That(y.ClassName, Is.EqualTo("SubPoint"));
+            Assert.That(y.FieldNames, Is.EquivalentTo(new[] { "a", "b", "c" }));
+            Assert.That(x["a"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 1.0 }));
+            Assert.That(x["b"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 2.0 }));
+            Assert.That(x["c"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 3.0 }));
+            Assert.That(y["a"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 14.0 }));
+            Assert.That(y["b"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 15.0 }));
+            Assert.That(y["c"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 16.0 }));
+        }
+
+        /// <summary>
+        /// Test nested objects.
+        /// </summary>
+        [Test]
+        public void TestNestedObjects()
+        {
+            var matFile = GetTests("good")["subsubPoint"];
+            var p = matFile["p"].Value as IMatObject;
+            Assert.That(p.ClassName, Is.EqualTo("Point"));
+            Assert.That(p["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 1.0 }));
+            var pp = p["y"] as IMatObject;
+            Assert.That(pp.ClassName == "Point");
+            Assert.That(pp["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 10.0 }));
+            var ppp = pp["y"] as IMatObject;
+            Assert.That(ppp["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 100.0 }));
+            Assert.That(ppp["y"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 200.0 }));
+        }
+
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
             new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 

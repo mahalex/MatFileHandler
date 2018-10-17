@@ -30,7 +30,10 @@ namespace MatFileHandler
         /// <param name="classInformation">Information about the classes.</param>
         /// <param name="objectInformation">Information about the objects.</param>
         /// <param name="data">Field values.</param>
-        public SubsystemData(ClassInfo[] classInformation, ObjectInfo[] objectInformation, Dictionary<int, IArray> data)
+        public SubsystemData(
+            Dictionary<int, ClassInfo> classInformation,
+            Dictionary<int, ObjectInfo> objectInformation,
+            Dictionary<int, IArray> data)
         {
             this.ClassInformation =
                 classInformation ?? throw new ArgumentNullException(nameof(classInformation));
@@ -42,7 +45,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets or sets information about all the classes occurring in the file.
         /// </summary>
-        public ClassInfo[] ClassInformation { get; set; }
+        public Dictionary<int, ClassInfo> ClassInformation { get; set; }
 
         /// <summary>
         /// Gets or sets the actual data: mapping of "object field" indices to their values.
@@ -52,7 +55,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets or sets information about all the objects occurring in the file.
         /// </summary>
-        public ObjectInfo[] ObjectInformation { get; set; }
+        public Dictionary<int, ObjectInfo> ObjectInformation { get; set; }
 
         /// <summary>
         /// Initialize this object from another object.
@@ -73,30 +76,23 @@ namespace MatFileHandler
         /// </summary>
         internal class ClassInfo
         {
-            private readonly string[] fieldNames;
-
             private readonly Dictionary<string, int> fieldToIndex;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ClassInfo"/> class.
             /// </summary>
             /// <param name="name">Class name.</param>
-            /// <param name="fieldNames">Names of the fields.</param>
-            public ClassInfo(string name, string[] fieldNames)
+            /// <param name="fieldToIndex">A dictionary mapping field names to field ids.</param>
+            public ClassInfo(string name, Dictionary<string, int> fieldToIndex)
             {
                 Name = name ?? throw new ArgumentNullException(nameof(name));
-                this.fieldNames = fieldNames ?? throw new ArgumentNullException(nameof(fieldNames));
-                fieldToIndex = new Dictionary<string, int>();
-                for (var i = 0; i < fieldNames.Length; i++)
-                {
-                    fieldToIndex[fieldNames[i]] = i;
-                }
+                this.fieldToIndex = fieldToIndex ?? throw new ArgumentNullException(nameof(fieldToIndex));
             }
 
             /// <summary>
             /// Gets names of the fields in the class.
             /// </summary>
-            public IReadOnlyCollection<string> FieldNames => fieldNames;
+            public IReadOnlyCollection<string> FieldNames => fieldToIndex.Keys;
 
             /// <summary>
             /// Gets name of the class.
@@ -129,9 +125,11 @@ namespace MatFileHandler
             /// <summary>
             /// Initializes a new instance of the <see cref="ObjectInfo"/> class.
             /// </summary>
+            /// <param name="position">Position of object in the object information table.</param>
             /// <param name="fieldLinks">A dictionary mapping the field indices to "field values" indices.</param>
-            public ObjectInfo(Dictionary<int, int> fieldLinks)
+            public ObjectInfo(int position, Dictionary<int, int> fieldLinks)
             {
+                Position = position;
                 this.fieldLinks = fieldLinks ?? throw new ArgumentNullException(nameof(fieldLinks));
             }
 
@@ -139,6 +137,11 @@ namespace MatFileHandler
             /// Gets mapping between the field indices and "field values" indices.
             /// </summary>
             public IReadOnlyDictionary<int, int> FieldLinks => fieldLinks;
+
+            /// <summary>
+            /// Gets position of object in the object information table.
+            /// </summary>
+            public int Position { get; }
         }
     }
 }
