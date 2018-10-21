@@ -1,5 +1,15 @@
 # MatFileHandler
 
+MatFileHandler is a .NET library for reading and writing MATLAB .mat files
+(of so-called "Level 5"). MatFileHandler supports numerical arrays,
+logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.
+Moreover, MatFileHandler is able to read the contents of MATLAB objects,
+and is currently probably the only third-party library that can do that.
+Since the format for storing MATLAB objects seems to be obscure and
+undocumented, support for them is preliminary and probably contains bugs.
+You can find (partial) technical description of MATLAB object data format
+[here](MatFileHandler/Objects.md).
+
 This document briefly describes how to perform simple operations with .mat files
 using MatFileHandler.
 
