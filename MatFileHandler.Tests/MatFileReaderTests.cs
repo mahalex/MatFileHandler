@@ -1,5 +1,6 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -386,6 +387,35 @@ namespace MatFileHandler.Tests
             var ppp = pp["y"] as IMatObject;
             Assert.That(ppp["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 100.0 }));
             Assert.That(ppp["y"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 200.0 }));
+        }
+
+        /// <summary>
+        /// Test datetime objects.
+        /// </summary>
+        [Test]
+        public void TestDatetime()
+        {
+            var matFile = GetTests("good")["datetime"];
+            var d = matFile["d"].Value as IMatObject;
+            var datetime = new DatetimeAdapter(d);
+            Assert.That(datetime.Dimensions, Is.EquivalentTo(new[] { 1, 2 }));
+            Assert.That(datetime[0], Is.EqualTo(new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero)));
+            Assert.That(datetime[1], Is.EqualTo(new DateTimeOffset(1987, 1, 2, 3, 4, 5, TimeSpan.Zero)));
+        }
+
+        /// <summary>
+        /// Another test for datetime objects.
+        /// </summary>
+        [Test]
+        public void TestDatetime2()
+        {
+            var matFile = GetTests("good")["datetime2"];
+            var d = matFile["d"].Value as IMatObject;
+            var datetime = new DatetimeAdapter(d);
+            Assert.That(datetime.Dimensions, Is.EquivalentTo(new[] { 1, 1 }));
+            var diff = new DateTimeOffset(2, 1, 1, 1, 1, 1, 235, TimeSpan.Zero);
+            Assert.That(datetime[0] - diff < TimeSpan.FromMilliseconds(1));
+            Assert.That(diff - datetime[0] < TimeSpan.FromMilliseconds(1));
         }
 
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
