@@ -51,7 +51,7 @@ namespace MatFileHandler
             }
 
             var numberOfObjects = ((offsets[5] - offsets[4]) / 24) - 1;
-            Dictionary<int, (int, int)> objectClasses = null;
+            Dictionary<int, (int objectPosition, int loadingOrder, int classId)> objectClasses = null;
             using (var stream = new MemoryStream(info, offsets[4], offsets[5] - offsets[4]))
             {
                 using (var reader = new BinaryReader(stream))
@@ -60,12 +60,14 @@ namespace MatFileHandler
                 }
             }
 
-            Dictionary<int, Dictionary<int, int>> objectToFields = null;
+            var numberOfObjectPositions = objectClasses.Values.Count(x => x.objectPosition != 0);
+
+            Dictionary<int, Dictionary<int, int>> objectPositionsToValues = null;
             using (var stream = new MemoryStream(info, offsets[5], offsets[6] - offsets[5]))
             {
                 using (var reader = new BinaryReader(stream))
                 {
-                    objectToFields = ReadObjectToFieldsMapping(reader, numberOfObjects);
+                    objectPositionsToValues = ReadObjectPositionsToValuesMapping(reader, numberOfObjectPositions);
                 }
             }
 
@@ -74,7 +76,7 @@ namespace MatFileHandler
                     classIdToName,
                     fieldNames,
                     objectClasses,
-                    objectToFields);
+                    objectPositionsToValues);
 
             var allFields = objectInformation.Values.SelectMany(obj => obj.FieldLinks.Values);
             var data = new Dictionary<int, IArray>();
@@ -107,17 +109,17 @@ namespace MatFileHandler
             return array;
         }
 
-        private static Dictionary<int, (int, int)> ReadObjectClasses(BinaryReader reader, int numberOfObjects)
+        private static Dictionary<int, (int objectPosition, int loadingOrder, int classId)> ReadObjectClasses(BinaryReader reader, int numberOfObjects)
         {
-            var result = new Dictionary<int, (int, int)>();
+            var result = new Dictionary<int, (int, int, int)>();
             reader.ReadBytes(24);
             for (var i = 0; i < numberOfObjects; i++)
             {
                 var classId = reader.ReadInt32();
                 reader.ReadBytes(12);
                 var objectPosition = reader.ReadInt32();
-                var objectId = reader.ReadInt32();
-                result[objectPosition] = (objectId, classId);
+                var loadingOrder = reader.ReadInt32();
+                result[i + 1] = (objectPosition, loadingOrder, classId);
             }
 
             return result;
@@ -126,23 +128,23 @@ namespace MatFileHandler
         private static (Dictionary<int, SubsystemData.ClassInfo>, Dictionary<int, SubsystemData.ObjectInfo>) GatherClassAndObjectInformation(
             Dictionary<int, string> classIdToName,
             string[] fieldNames,
-            Dictionary<int, (int, int)> objectClasses,
-            Dictionary<int, Dictionary<int, int>> objectToFields)
+            Dictionary<int, (int objectPosition, int loadingOrder, int classId)> objectClasses,
+            Dictionary<int, Dictionary<int, int>> objectPositionsToValues)
         {
             var classInfos = new Dictionary<int, SubsystemData.ClassInfo>();
             foreach (var classId in classIdToName.Keys)
             {
                 var className = classIdToName[classId];
                 var fieldIds = new SortedSet<int>();
-                foreach (var objectPosition in objectToFields.Keys)
+                foreach (var objectPosition in objectPositionsToValues.Keys)
                 {
-                    var (_, thisObjectClassId) = objectClasses[objectPosition];
-                    if (thisObjectClassId != classId)
+                    var keyValuePair = objectClasses.First(pair => pair.Value.objectPosition == objectPosition);
+                    if (keyValuePair.Value.classId != classId)
                     {
                         continue;
                     }
 
-                    foreach (var fieldId in objectToFields[objectPosition].Keys)
+                    foreach (var fieldId in objectPositionsToValues[objectPosition].Keys)
                     {
                         fieldIds.Add(fieldId);
                     }
@@ -156,10 +158,10 @@ namespace MatFileHandler
             }
 
             var objectInfos = new Dictionary<int, SubsystemData.ObjectInfo>();
-            foreach (var objectPosition in objectToFields.Keys)
+            foreach (var objectPosition in objectPositionsToValues.Keys)
             {
-                var (objectId, _) = objectClasses[objectPosition];
-                objectInfos[objectId] = new SubsystemData.ObjectInfo(objectPosition, objectToFields[objectPosition]);
+                var keyValuePair = objectClasses.First(pair => pair.Value.objectPosition == objectPosition);
+                objectInfos[keyValuePair.Key] = new SubsystemData.ObjectInfo(objectPosition, objectPositionsToValues[objectPosition]);
             }
 
             return (classInfos, objectInfos);
@@ -180,11 +182,11 @@ namespace MatFileHandler
             return result;
         }
 
-        private static Dictionary<int, Dictionary<int, int>> ReadObjectToFieldsMapping(BinaryReader reader, int numberOfObjects)
+        private static Dictionary<int, Dictionary<int, int>> ReadObjectPositionsToValuesMapping(BinaryReader reader, int numberOfValues)
         {
             var result = new Dictionary<int, Dictionary<int, int>>();
             reader.ReadBytes(8);
-            for (var objectPosition = 1; objectPosition <= numberOfObjects; objectPosition++)
+            for (var objectPosition = 1; objectPosition <= numberOfValues; objectPosition++)
             {
                 result[objectPosition] = ReadFieldToFieldDataMapping(reader);
                 var position = reader.BaseStream.Position;
