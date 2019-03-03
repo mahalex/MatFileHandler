@@ -51,7 +51,7 @@ namespace MatFileHandler
             }
 
             var numberOfEmbeddedObjects = (offsets[4] - offsets[3] - 8) / 16;
-            Dictionary<int, EmbeddedObjectInformation> embeddedObjectPositionsToValues = null;
+            Dictionary<int, Dictionary<int, int>> embeddedObjectPositionsToValues = null;
             using (var stream = new MemoryStream(info, offsets[3], offsets[4] - offsets[3]))
             {
                 using (var reader = new BinaryReader(stream))
@@ -106,10 +106,9 @@ namespace MatFileHandler
                 string[] fieldNames,
                 Dictionary<int, ObjectClassInformation> objectClasses,
                 Dictionary<int, Dictionary<int, int>> objectPositionsToValues,
-                Dictionary<int, EmbeddedObjectInformation> embeddedObjectPositionsToValues)
+                Dictionary<int, Dictionary<int, int>> embeddedObjectPositionsToValues)
         {
             var classInfos = new Dictionary<int, SubsystemData.ClassInfo>();
-            var newEmbeddedObjectPositionsToValues = new Dictionary<int, Dictionary<int, int>>();
             foreach (var classId in classIdToName.Keys)
             {
                 var className = classIdToName[classId];
@@ -136,11 +135,10 @@ namespace MatFileHandler
                         continue;
                     }
 
-                    fieldIds.Add(embeddedObjectPositionsToValues[objectPosition].FieldIndex);
-                    var d = new Dictionary<int, int>();
-                    var embeddedInfo = embeddedObjectPositionsToValues[objectPosition];
-                    d[embeddedInfo.FieldIndex] = embeddedInfo.ValueIndex;
-                    newEmbeddedObjectPositionsToValues[objectPosition] = d;
+                    foreach (var fieldId in embeddedObjectPositionsToValues[objectPosition].Keys)
+                    {
+                        fieldIds.Add(fieldId);
+                    }
                 }
 
                 var fieldToIndex = new Dictionary<string, int>();
@@ -163,7 +161,7 @@ namespace MatFileHandler
             {
                 var keyValuePair = objectClasses.First(pair => pair.Value.EmbeddedObjectPosition == objectPosition);
                 objectInfos[keyValuePair.Key] =
-                    new SubsystemData.ObjectInfo(newEmbeddedObjectPositionsToValues[objectPosition]);
+                    new SubsystemData.ObjectInfo(embeddedObjectPositionsToValues[objectPosition]);
             }
 
             return (classInfos, objectInfos);
@@ -192,10 +190,10 @@ namespace MatFileHandler
             return result;
         }
 
-        private static Dictionary<int, EmbeddedObjectInformation> ReadEmbeddedObjectPositionsToValuesMapping(
+        private static Dictionary<int, Dictionary<int, int>> ReadEmbeddedObjectPositionsToValuesMapping(
             BinaryReader reader, int numberOfObjects)
         {
-            var result = new Dictionary<int, EmbeddedObjectInformation>();
+            var result = new Dictionary<int, Dictionary<int, int>>();
             reader.ReadBytes(8);
             for (var objectPosition = 1; objectPosition <= numberOfObjects; objectPosition++)
             {
@@ -203,7 +201,7 @@ namespace MatFileHandler
                 var fieldIndex = reader.ReadInt32();
                 var c = reader.ReadInt32();
                 var valueIndex = reader.ReadInt32();
-                result[objectPosition] = new EmbeddedObjectInformation(fieldIndex, valueIndex);
+                result[objectPosition] = new Dictionary<int, int> { [fieldIndex] = valueIndex };
             }
 
             return result;
@@ -328,19 +326,6 @@ namespace MatFileHandler
             }
 
             return array;
-        }
-
-        private struct EmbeddedObjectInformation
-        {
-            public EmbeddedObjectInformation(int fieldIndex, int valueIndex)
-            {
-                FieldIndex = fieldIndex;
-                ValueIndex = valueIndex;
-            }
-
-            public int FieldIndex { get; }
-
-            public int ValueIndex { get; }
         }
 
         private struct ObjectClassInformation
