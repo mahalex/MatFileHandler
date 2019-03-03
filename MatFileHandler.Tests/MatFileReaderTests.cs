@@ -434,6 +434,21 @@ namespace MatFileHandler.Tests
             Assert.That(str[3], Is.EqualTo("æøå"));
         }
 
+        /// <summary>
+        /// Test duration objects.
+        /// </summary>
+        [Test]
+        public void TestDuration()
+        {
+            var matFile = GetTests("good")["duration"];
+            var d = matFile["d"].Value as IMatObject;
+            var duration = new DurationAdapter(d);
+            Assert.That(duration.Dimensions, Is.EquivalentTo(new[] { 1, 3 }));
+            Assert.That(duration[0], Is.EqualTo(TimeSpan.FromTicks(12345678L)));
+            Assert.That(duration[1], Is.EqualTo(new TimeSpan(0, 2, 4)));
+            Assert.That(duration[2], Is.EqualTo(new TimeSpan(1, 3, 5)));
+        }
+
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
             new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 
