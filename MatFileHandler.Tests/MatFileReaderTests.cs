@@ -418,6 +418,22 @@ namespace MatFileHandler.Tests
             Assert.That(diff - datetime[0] < TimeSpan.FromMilliseconds(1));
         }
 
+        /// <summary>
+        /// Test string objects.
+        /// </summary>
+        [Test]
+        public void TestString()
+        {
+            var matFile = GetTests("good")["string"];
+            var s = matFile["s"].Value as IMatObject;
+            var str = new StringAdapter(s);
+            Assert.That(str.Dimensions, Is.EquivalentTo(new[] { 4, 1 }));
+            Assert.That(str[0], Is.EqualTo("abc"));
+            Assert.That(str[1], Is.EqualTo("defgh"));
+            Assert.That(str[2], Is.EqualTo("абвгд"));
+            Assert.That(str[3], Is.EqualTo("æøå"));
+        }
+
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
             new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 
