@@ -1,14 +1,12 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
 using System;
-using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace MatFileHandler
 {
     /// <summary>
-    /// A better interface for using datetime objects.
+    /// A better interface for using string objects.
     /// </summary>
     public class StringAdapter
     {
@@ -18,7 +16,7 @@ namespace MatFileHandler
         /// <summary>
         /// Initializes a new instance of the <see cref="StringAdapter"/> class.
         /// </summary>
-        /// <param name="array">Source datetime object.</param>
+        /// <param name="array">Source string object.</param>
         public StringAdapter(IArray array)
         {
             var matObject = array as IMatObject;
@@ -33,7 +31,7 @@ namespace MatFileHandler
         }
 
         /// <summary>
-        /// Gets datetime array dimensions.
+        /// Gets string array dimensions.
         /// </summary>
         public int[] Dimensions => dimensions;
 
