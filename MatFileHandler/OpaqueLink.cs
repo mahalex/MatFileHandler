@@ -107,8 +107,8 @@ namespace MatFileHandler
                 return false;
             }
 
-            var objectPosition = IndexToObjectId[index];
-            var objectInfo = subsystemData.ObjectInformation.First(pair => pair.Value.Position == objectPosition).Value;
+            var objectId = IndexToObjectId[index];
+            var objectInfo = subsystemData.ObjectInformation[objectId];
             var fieldId = objectInfo.FieldLinks[fieldIndex];
             output = subsystemData.Data[fieldId];
             return true;

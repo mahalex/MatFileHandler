@@ -125,11 +125,9 @@ namespace MatFileHandler
             /// <summary>
             /// Initializes a new instance of the <see cref="ObjectInfo"/> class.
             /// </summary>
-            /// <param name="position">Position of object in the object information table.</param>
             /// <param name="fieldLinks">A dictionary mapping the field indices to "field values" indices.</param>
-            public ObjectInfo(int position, Dictionary<int, int> fieldLinks)
+            public ObjectInfo(Dictionary<int, int> fieldLinks)
             {
-                Position = position;
                 this.fieldLinks = fieldLinks ?? throw new ArgumentNullException(nameof(fieldLinks));
             }
 
@@ -137,11 +135,6 @@ namespace MatFileHandler
             /// Gets mapping between the field indices and "field values" indices.
             /// </summary>
             public IReadOnlyDictionary<int, int> FieldLinks => fieldLinks;
-
-            /// <summary>
-            /// Gets position of object in the object information table.
-            /// </summary>
-            public int Position { get; }
         }
     }
 }
