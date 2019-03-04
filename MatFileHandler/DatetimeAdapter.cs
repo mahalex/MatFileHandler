@@ -56,7 +56,18 @@ namespace MatFileHandler
         /// Gets values of datetime object at given position in the array converted to <see cref="DateTimeOffset"/>.
         /// </summary>
         /// <param name="list">Indices.</param>
-        /// <returns>Value converted to  <see cref="DateTimeOffset"/>.</returns>
-        public DateTimeOffset this[params int[] list] => epoch.AddMilliseconds(data[Dimensions.DimFlatten(list)]);
+        /// <returns>Value converted to <see cref="DateTimeOffset"/>; null if the resulting value is unrepresentable.</returns>
+        public DateTimeOffset? this[params int[] list]
+        {
+            get
+            {
+                var milliseconds = data[Dimensions.DimFlatten(list)];
+                if (milliseconds < -62_135_596_800_000.0 || milliseconds > 253_402_300_799_999.0)
+                {
+                    return null;
+                }
+                return epoch.AddMilliseconds(milliseconds);
+            }
+        }
     }
 }

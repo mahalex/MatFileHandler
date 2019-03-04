@@ -449,6 +449,19 @@ namespace MatFileHandler.Tests
             Assert.That(duration[2], Is.EqualTo(new TimeSpan(1, 3, 5)));
         }
 
+        /// <summary>
+        /// Test unrepresentable datetime.
+        /// </summary>
+        [Test]
+        public void TestDatetime_Unrepresentable()
+        {
+            var matFile = GetTests("good")["datetime-unrepresentable"];
+            var obj = matFile["d"].Value as IMatObject;
+            var datetime = new DatetimeAdapter(obj);
+            var d0 = datetime[0];
+            Assert.That(d0, Is.Null);
+        }
+
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
             new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 
