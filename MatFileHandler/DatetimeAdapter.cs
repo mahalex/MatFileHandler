@@ -56,7 +56,7 @@ namespace MatFileHandler
         /// Gets values of datetime object at given position in the array converted to <see cref="DateTimeOffset"/>.
         /// </summary>
         /// <param name="list">Indices.</param>
-        /// <returns>Value converted to  <see cref="DateTimeOffset"/>.</returns>
+        /// <returns>Value converted to <see cref="DateTimeOffset"/>; null if the resulting value is unrepresentable.</returns>
         public DateTimeOffset? this[params int[] list]
         {
             get
