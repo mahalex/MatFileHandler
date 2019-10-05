@@ -43,58 +43,152 @@ namespace MatFileHandler
         /// <returns>Array of values of the array, converted to Double, or null if the conversion is not possible.</returns>
         public override double[] ConvertToDoubleArray()
         {
-            return Data as double[] ?? Data.Select(x => Convert.ToDouble(x)).ToArray();
+            return Data switch
+            {
+                sbyte[] sbyteData => DataExtraction.SbyteToDouble(sbyteData),
+                byte[] byteData => DataExtraction.ByteToDouble(byteData),
+                short[] shortData => DataExtraction.ShortToDouble(shortData),
+                ushort[] ushortData => DataExtraction.UshortToDouble(ushortData),
+                int[] intData => DataExtraction.IntToDouble(intData),
+                uint[] uintData => DataExtraction.UintToDouble(uintData),
+                long[] longData => DataExtraction.LongToDouble(longData),
+                ulong[] ulongData => DataExtraction.UlongToDouble(ulongData),
+                float[] floatData => DataExtraction.FloatToDouble(floatData),
+                double[] doubleData => doubleData,
+                _ => throw new HandlerException("Cannot convert data to double array.")
+            };
         }
 
         /// <summary>
         /// Tries to convert the array to an array of Complex values.
         /// </summary>
         /// <returns>Array of values of the array, converted to Complex, or null if the conversion is not possible.</returns>
-        public override Complex[] ConvertToComplexArray()
+        public override Complex[]? ConvertToComplexArray()
         {
-            if (Data is Complex[])
+            return Data switch
             {
-                return Data as Complex[];
-            }
-            if (Data is ComplexOf<sbyte>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<sbyte>[]);
-            }
-            if (Data is ComplexOf<byte>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<byte>[]);
-            }
-            if (Data is ComplexOf<short>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<short>[]);
-            }
-            if (Data is ComplexOf<ushort>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<ushort>[]);
-            }
-            if (Data is ComplexOf<int>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<int>[]);
-            }
-            if (Data is ComplexOf<uint>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<uint>[]);
-            }
-            if (Data is ComplexOf<long>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<long>[]);
-            }
-            if (Data is ComplexOf<ulong>[])
-            {
-                return ConvertToComplex(Data as ComplexOf<ulong>[]);
-            }
-            return ConvertToDoubleArray().Select(x => new Complex(x, 0.0)).ToArray();
+                Complex[] data => data,
+                ComplexOf<sbyte>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<byte>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<short>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<ushort>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<int>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<uint>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<long>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<ulong>[] ofs => ConvertToComplex(ofs),
+                ComplexOf<float>[] ofs => ConvertToComplex(ofs),
+                _ => ConvertToComplex(ConvertToDoubleArray())
+            };
         }
 
-        private static Complex[] ConvertToComplex<TS>(IEnumerable<ComplexOf<TS>> array)
-          where TS : struct
+        private static Complex[] ConvertToComplex(ComplexOf<sbyte>[] array)
         {
-            return array.Select(x => new Complex(Convert.ToDouble(x.Real), Convert.ToDouble(x.Imaginary))).ToArray();
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<byte>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<short>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<ushort>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<int>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<uint>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<long>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<ulong>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(ComplexOf<float>[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(Convert.ToDouble(array[i].Real), Convert.ToDouble(array[i].Imaginary));
+            }
+
+            return result;
+        }
+
+        private static Complex[] ConvertToComplex(double[] array)
+        {
+            var result = new Complex[array.Length];
+            for (var i = 0; i < array.Length; i++)
+            {
+                result[i] = new Complex(array[i], 0.0);
+            }
+
+            return result;
         }
     }
 }

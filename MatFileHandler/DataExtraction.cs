@@ -350,7 +350,13 @@ namespace MatFileHandler
         }
 
         // * to double
-        private static double[] SbyteToDouble(sbyte[] source)
+
+        /// <summary>
+        /// Convert an array of signed bytes to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] SbyteToDouble(sbyte[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -361,7 +367,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] ByteToDouble(byte[] source)
+        /// <summary>
+        /// Convert an array of bytes to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] ByteToDouble(byte[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -372,7 +383,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] ShortToDouble(short[] source)
+        /// <summary>
+        /// Convert an array of shorts to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] ShortToDouble(short[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -383,7 +399,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] UshortToDouble(ushort[] source)
+        /// <summary>
+        /// Convert an array of unsigned shorts to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] UshortToDouble(ushort[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -394,7 +415,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] IntToDouble(int[] source)
+        /// <summary>
+        /// Convert an array of integers to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] IntToDouble(int[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -405,7 +431,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] UintToDouble(uint[] source)
+        /// <summary>
+        /// Convert an array of unsigned integers to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] UintToDouble(uint[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -416,7 +447,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] LongToDouble(long[] source)
+        /// <summary>
+        /// Convert an array of longs to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] LongToDouble(long[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -427,7 +463,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] UlongToDouble(ulong[] source)
+        /// <summary>
+        /// Convert an array of unsigned longs to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] UlongToDouble(ulong[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)
@@ -438,7 +479,12 @@ namespace MatFileHandler
             return result;
         }
 
-        private static double[] FloatToDouble(float[] source)
+        /// <summary>
+        /// Convert an array of floats to an array of doubles.
+        /// </summary>
+        /// <param name="source">Source array.</param>
+        /// <returns>Converted array.</returns>
+        public static double[] FloatToDouble(float[] source)
         {
             var result = new double[source.Length];
             for (var i = 0; i < source.Length; i++)

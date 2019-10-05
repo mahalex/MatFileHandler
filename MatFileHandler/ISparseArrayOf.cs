@@ -15,6 +15,6 @@ namespace MatFileHandler
         /// <summary>
         /// Gets a dictionary mapping indices to values.
         /// </summary>
-        new IReadOnlyDictionary<(int, int), T> Data { get; }
+        new IReadOnlyDictionary<(int row, int column), T> Data { get; }
     }
 }

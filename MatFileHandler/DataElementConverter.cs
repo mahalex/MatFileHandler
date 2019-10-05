@@ -106,7 +106,7 @@ namespace MatFileHandler
             int[] dimensions,
             string name,
             DataElement realData,
-            DataElement imaginaryData)
+            DataElement? imaginaryData)
             where T : struct
         {
             if (flags.Variable.HasFlag(Variable.IsLogical))
@@ -139,6 +139,11 @@ namespace MatFileHandler
                     var dataArray = ConvertDataToProperType<T>(realData, flags.Class);
                     if (flags.Variable.HasFlag(Variable.IsComplex))
                     {
+                        if (imaginaryData is null)
+                        {
+                            throw new HandlerException("Imaginary part of a complex variable not found.");
+                        }
+
                         var dataArray2 = ConvertDataToProperType<T>(imaginaryData, flags.Class);
                         if (flags.Class == ArrayType.MxDouble)
                         {
@@ -169,34 +174,11 @@ namespace MatFileHandler
 
         private static T[] ConvertDataToProperType<T>(DataElement data, ArrayType arrayType)
         {
-            switch (arrayType)
-            {
-                case ArrayType.MxDouble:
-                    return DataExtraction.GetDataAsDouble(data) as T[];
-                case ArrayType.MxSingle:
-                    return DataExtraction.GetDataAsSingle(data) as T[];
-                case ArrayType.MxInt8:
-                    return DataExtraction.GetDataAsInt8(data) as T[];
-                case ArrayType.MxUInt8:
-                    return DataExtraction.GetDataAsUInt8(data) as T[];
-                case ArrayType.MxInt16:
-                    return DataExtraction.GetDataAsInt16(data) as T[];
-                case ArrayType.MxUInt16:
-                    return DataExtraction.GetDataAsUInt16(data) as T[];
-                case ArrayType.MxInt32:
-                    return DataExtraction.GetDataAsInt32(data) as T[];
-                case ArrayType.MxUInt32:
-                    return DataExtraction.GetDataAsUInt32(data) as T[];
-                case ArrayType.MxInt64:
-                    return DataExtraction.GetDataAsInt64(data) as T[];
-                case ArrayType.MxUInt64:
-                    return DataExtraction.GetDataAsUInt64(data) as T[];
-                default:
-                    throw new NotSupportedException();
-            }
+            return TryConvertDataToProperType<T>(data, arrayType)
+                   ?? throw new HandlerException($"Unexpected data type.");
         }
 
-        private static T[] ConvertDataToSparseProperType<T>(DataElement data, bool isLogical)
+        private static T[]? ConvertDataToSparseProperType<T>(DataElement data, bool isLogical)
         {
             if (isLogical)
             {
@@ -217,7 +199,7 @@ namespace MatFileHandler
             string name,
             MiNum<ushort> dataElement)
         {
-            var data = dataElement?.Data;
+            var data = dataElement.Data;
             return new MatCharArrayOf<ushort>(
                 flags,
                 dimensions,
@@ -226,7 +208,7 @@ namespace MatFileHandler
                 new string(data.Select(x => (char)x).ToArray()));
         }
 
-        private static Dictionary<(int, int), T> ConvertMatlabSparseToDictionary<T>(
+        private static Dictionary<(int row, int column), T> ConvertMatlabSparseToDictionary<T>(
             int[] rowIndex,
             int[] columnIndex,
             Func<int, T> get)
@@ -241,6 +223,24 @@ namespace MatFileHandler
                 }
             }
             return result;
+        }
+
+        private static T[]? TryConvertDataToProperType<T>(DataElement data, ArrayType arrayType)
+        {
+            return arrayType switch
+            {
+                ArrayType.MxDouble => DataExtraction.GetDataAsDouble(data) as T[],
+                ArrayType.MxSingle => DataExtraction.GetDataAsSingle(data) as T[],
+                ArrayType.MxInt8 => DataExtraction.GetDataAsInt8(data) as T[],
+                ArrayType.MxUInt8 => DataExtraction.GetDataAsUInt8(data) as T[],
+                ArrayType.MxInt16 => DataExtraction.GetDataAsInt16(data) as T[],
+                ArrayType.MxUInt16 => DataExtraction.GetDataAsUInt16(data) as T[],
+                ArrayType.MxInt32 => DataExtraction.GetDataAsInt32(data) as T[],
+                ArrayType.MxUInt32 => DataExtraction.GetDataAsUInt32(data) as T[],
+                ArrayType.MxInt64 => DataExtraction.GetDataAsInt64(data) as T[],
+                ArrayType.MxUInt64 => DataExtraction.GetDataAsUInt64(data) as T[],
+                _ => throw new NotSupportedException()
+            };
         }
     }
 }

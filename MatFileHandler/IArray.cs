@@ -28,12 +28,12 @@ namespace MatFileHandler
         /// Tries to convert the array to an array of Double values.
         /// </summary>
         /// <returns>Array of values of the array, converted to Double, or null if the conversion is not possible.</returns>
-        double[] ConvertToDoubleArray();
+        double[]? ConvertToDoubleArray();
 
         /// <summary>
         /// Tries to convert the array to an array of Complex values.
         /// </summary>
         /// <returns>Array of values of the array, converted to Complex, or null if the conversion is not possible.</returns>
-        Complex[] ConvertToComplexArray();
+        Complex[]? ConvertToComplexArray();
     }
 }

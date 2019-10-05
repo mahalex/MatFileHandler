@@ -57,7 +57,8 @@ namespace MatFileHandler
                     var dataElement = dataElementReader.Read(reader);
                     if (position == subsystemDataOffset)
                     {
-                        var subsystemDataElement = dataElement as IArrayOf<byte>;
+                        var subsystemDataElement = dataElement as IArrayOf<byte>
+                            ?? throw new HandlerException("Cannot parse subsystem data element.");
                         var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
                         subsystemData.Set(newSubsystemData);
                     }
