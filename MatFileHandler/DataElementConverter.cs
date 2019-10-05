@@ -33,8 +33,8 @@ namespace MatFileHandler
             DataElement data,
             DataElement imaginaryData)
         {
-            var realParts = DataExtraction.GetDataAsDouble(data).ToArrayLazily();
-            var imaginaryParts = DataExtraction.GetDataAsDouble(imaginaryData).ToArrayLazily();
+            var realParts = DataExtraction.GetDataAsDouble(data);
+            var imaginaryParts = DataExtraction.GetDataAsDouble(imaginaryData);
             if (realParts == null)
             {
                 throw new HandlerException("Couldn't read sparse array.");
@@ -111,7 +111,7 @@ namespace MatFileHandler
         {
             if (flags.Variable.HasFlag(Variable.IsLogical))
             {
-                var data = DataExtraction.GetDataAsUInt8(realData).ToArrayLazily().Select(x => x != 0).ToArray();
+                var data = DataExtraction.GetDataAsUInt8(realData).Select(x => x != 0).ToArray();
                 return new MatNumericalArrayOf<bool>(flags, dimensions, name, data);
             }
             switch (flags.Class)
@@ -163,7 +163,7 @@ namespace MatFileHandler
             string name,
             MiNum<byte> dataElement)
         {
-            var data = dataElement?.Data;
+            var data = dataElement.Data;
             return new MatCharArrayOf<byte>(flags, dimensions, name, data, Encoding.UTF8.GetString(data));
         }
 
@@ -172,25 +172,25 @@ namespace MatFileHandler
             switch (arrayType)
             {
                 case ArrayType.MxDouble:
-                    return DataExtraction.GetDataAsDouble(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsDouble(data) as T[];
                 case ArrayType.MxSingle:
-                    return DataExtraction.GetDataAsSingle(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsSingle(data) as T[];
                 case ArrayType.MxInt8:
-                    return DataExtraction.GetDataAsInt8(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsInt8(data) as T[];
                 case ArrayType.MxUInt8:
-                    return DataExtraction.GetDataAsUInt8(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsUInt8(data) as T[];
                 case ArrayType.MxInt16:
-                    return DataExtraction.GetDataAsInt16(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsInt16(data) as T[];
                 case ArrayType.MxUInt16:
-                    return DataExtraction.GetDataAsUInt16(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsUInt16(data) as T[];
                 case ArrayType.MxInt32:
-                    return DataExtraction.GetDataAsInt32(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsInt32(data) as T[];
                 case ArrayType.MxUInt32:
-                    return DataExtraction.GetDataAsUInt32(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsUInt32(data) as T[];
                 case ArrayType.MxInt64:
-                    return DataExtraction.GetDataAsInt64(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsInt64(data) as T[];
                 case ArrayType.MxUInt64:
-                    return DataExtraction.GetDataAsUInt64(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsUInt64(data) as T[];
                 default:
                     throw new NotSupportedException();
             }
@@ -200,12 +200,12 @@ namespace MatFileHandler
         {
             if (isLogical)
             {
-                return DataExtraction.GetDataAsUInt8(data).ToArrayLazily().Select(x => x != 0).ToArray() as T[];
+                return DataExtraction.GetDataAsUInt8(data).Select(x => x != 0).ToArray() as T[];
             }
             switch (data)
             {
                 case MiNum<double> _:
-                    return DataExtraction.GetDataAsDouble(data).ToArrayLazily() as T[];
+                    return DataExtraction.GetDataAsDouble(data) as T[];
                 default:
                     throw new NotSupportedException();
             }
