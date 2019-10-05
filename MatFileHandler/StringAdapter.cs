@@ -25,7 +25,8 @@ namespace MatFileHandler
                 throw new ArgumentException("The object provided is not a string.");
             }
 
-            var binaryData = matObject["any", 0] as IArrayOf<ulong>;
+            var binaryData = matObject["any", 0] as IArrayOf<ulong>
+                             ?? throw new HandlerException("Cannot extract string data.");
 
             (dimensions, strings) = ParseBinaryData(binaryData.Data);
         }

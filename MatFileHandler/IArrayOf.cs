@@ -21,7 +21,7 @@ namespace MatFileHandler
     /// * for cell arrays:
     ///   IArray;
     /// * for structure arrays:
-    ///   IReadOnlyDictionary&lt;string, IArray&gt;;
+    ///   IReadOnlyDictionary&lt;string, IArray&gt;.
     /// </remarks>
     public interface IArrayOf<T> : IArray
     {

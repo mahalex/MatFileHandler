@@ -50,9 +50,9 @@ namespace MatFileHandler
         public string TypeDescription { get; }
 
         /// <inheritdoc />
-        public override Complex[] ConvertToComplexArray() => null;
+        public override Complex[]? ConvertToComplexArray() => null;
 
         /// <inheritdoc />
-        public override double[] ConvertToDoubleArray() => null;
+        public override double[]? ConvertToDoubleArray() => null;
     }
 }

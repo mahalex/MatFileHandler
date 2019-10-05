@@ -198,14 +198,14 @@ namespace MatFileHandler
             return buffer;
         }
 
-        private (byte[], byte[]) ConvertToPairOfByteArrays<T>(ComplexOf<T>[] data)
+        private (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays<T>(ComplexOf<T>[] data)
           where T : struct
         {
             return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
                 ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
         }
 
-        private (byte[], byte[]) ConvertToPairOfByteArrays(Complex[] data)
+        private (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays(Complex[] data)
         {
             return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
                 ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
@@ -496,8 +496,8 @@ namespace MatFileHandler
             for (var column = 0; column < numberOfColumns; column++)
             {
                 var column1 = column;
-                var thisColumn = keys.Where(pair => pair.Item2 == column1 && !dict[pair].Equals(default(T)));
-                var thisRow = thisColumn.Select(pair => pair.Item1).OrderBy(x => x).ToArray();
+                var thisColumn = keys.Where(pair => pair.column == column1 && !dict[pair].Equals(default));
+                var thisRow = thisColumn.Select(pair => pair.row).OrderBy(x => x).ToArray();
                 rowIndexList.AddRange(thisRow);
                 valuesList.AddRange(thisRow.Select(row => dict[(row, column1)]));
                 columnIndex[column + 1] = rowIndexList.Count;

@@ -12,15 +12,15 @@ namespace MatFileHandler
     /// </summary>
     internal class SubsystemData
     {
+        private RealSubsystemData? _realData;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SubsystemData"/> class.
         /// Default constructor: initializes everything to null.
         /// </summary>
         public SubsystemData()
         {
-            ClassInformation = null;
-            ObjectInformation = null;
-            Data = null;
+            _realData = null;
         }
 
         /// <summary>
@@ -35,27 +35,29 @@ namespace MatFileHandler
             Dictionary<int, ObjectInfo> objectInformation,
             Dictionary<int, IArray> data)
         {
-            this.ClassInformation =
-                classInformation ?? throw new ArgumentNullException(nameof(classInformation));
-            this.ObjectInformation =
-                objectInformation ?? throw new ArgumentNullException(nameof(objectInformation));
-            this.Data = data ?? throw new ArgumentNullException(nameof(data));
+            _realData = new RealSubsystemData(
+                classInformation,
+                objectInformation,
+                data);
         }
 
         /// <summary>
-        /// Gets or sets information about all the classes occurring in the file.
+        /// Gets information about all the classes occurring in the file.
         /// </summary>
-        public Dictionary<int, ClassInfo> ClassInformation { get; set; }
+        public Dictionary<int, ClassInfo> ClassInformation =>
+            _realData?.ClassInformation ?? throw new HandlerException("Subsystem data missing.");
 
         /// <summary>
-        /// Gets or sets the actual data: mapping of "object field" indices to their values.
+        /// Gets the actual data: mapping of "object field" indices to their values.
         /// </summary>
-        public IReadOnlyDictionary<int, IArray> Data { get; set; }
+        public IReadOnlyDictionary<int, IArray> Data =>
+            _realData?.Data ?? throw new HandlerException("Subsystem data missing.");
 
         /// <summary>
-        /// Gets or sets information about all the objects occurring in the file.
+        /// Gets information about all the objects occurring in the file.
         /// </summary>
-        public Dictionary<int, ObjectInfo> ObjectInformation { get; set; }
+        public Dictionary<int, ObjectInfo> ObjectInformation =>
+            _realData?.ObjectInformation ?? throw new HandlerException("Subsystem data missing.");
 
         /// <summary>
         /// Initialize this object from another object.
@@ -66,9 +68,10 @@ namespace MatFileHandler
         /// <param name="data">Another subsystem data.</param>
         public void Set(SubsystemData data)
         {
-            this.ClassInformation = data.ClassInformation;
-            this.ObjectInformation = data.ObjectInformation;
-            this.Data = data.Data;
+            _realData = new RealSubsystemData(
+                data.ClassInformation,
+                data.ObjectInformation,
+                data.Data);
         }
 
         /// <summary>
@@ -135,6 +138,40 @@ namespace MatFileHandler
             /// Gets mapping between the field indices and "field values" indices.
             /// </summary>
             public IReadOnlyDictionary<int, int> FieldLinks => fieldLinks;
+        }
+
+        private class RealSubsystemData
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RealSubsystemData"/> class.
+            /// </summary>
+            /// <param name="classInformation">Class information.</param>
+            /// <param name="objectInformation">Object information.</param>
+            /// <param name="data">Data.</param>
+            public RealSubsystemData(
+                Dictionary<int, ClassInfo> classInformation,
+                Dictionary<int, ObjectInfo> objectInformation,
+                IReadOnlyDictionary<int, IArray> data)
+            {
+                ClassInformation = classInformation ?? throw new ArgumentNullException(nameof(classInformation));
+                ObjectInformation = objectInformation ?? throw new ArgumentNullException(nameof(objectInformation));
+                Data = data ?? throw new ArgumentNullException(nameof(data));
+            }
+
+            /// <summary>
+            /// Gets information about all the classes occurring in the file.
+            /// </summary>
+            public Dictionary<int, ClassInfo> ClassInformation { get; }
+
+            /// <summary>
+            /// Gets the actual data: mapping of "object field" indices to their values.
+            /// </summary>
+            public IReadOnlyDictionary<int, IArray> Data { get; }
+
+            /// <summary>
+            /// Gets information about all the objects occurring in the file.
+            /// </summary>
+            public Dictionary<int, ObjectInfo> ObjectInformation { get; }
         }
     }
 }

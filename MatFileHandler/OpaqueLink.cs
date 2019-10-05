@@ -47,7 +47,21 @@ namespace MatFileHandler
         public int ClassIndex { get; }
 
         /// <inheritdoc />
-        public IReadOnlyDictionary<string, IArray>[] Data => null;
+        public IReadOnlyDictionary<string, IArray>[] Data
+        {
+            get
+            {
+                var result = new IReadOnlyDictionary<string, IArray>[Count];
+                for (var i = 0; i < Count; i++)
+                {
+                    result[i] = FieldNamesArray.ToDictionary(
+                        name => name,
+                        name => this[name, i]);
+                }
+
+                return result;
+            }
+        }
 
         /// <inheritdoc />
         public IEnumerable<string> FieldNames => FieldNamesArray;
@@ -71,7 +85,7 @@ namespace MatFileHandler
             {
                 if (TryGetValue(field, out var result, list))
                 {
-                    return result;
+                    return result!;
                 }
 
                 throw new IndexOutOfRangeException();
@@ -91,19 +105,19 @@ namespace MatFileHandler
             return new OpaqueObjectArrayElement(this, i);
         }
 
-        private bool TryGetValue(string field, out IArray output, params int[] list)
+        private bool TryGetValue(string field, out IArray? output, params int[] list)
         {
             var index = Dimensions.DimFlatten(list);
             var maybeFieldIndex = subsystemData.ClassInformation[ClassIndex].FindField(field);
             if (!(maybeFieldIndex is int fieldIndex))
             {
-                output = default(IArray);
+                output = default;
                 return false;
             }
 
             if (index >= IndexToObjectId.Length)
             {
-                output = default(IArray);
+                output = default;
                 return false;
             }
 
@@ -161,7 +175,9 @@ namespace MatFileHandler
             }
 
             /// <inheritdoc />
-            public bool TryGetValue(string key, out IArray value)
+#pragma warning disable CS8614
+            public bool TryGetValue(string key, out IArray? value)
+#pragma warning restore CS8614
             {
                 return parent.TryGetValue(key, out value, index);
             }

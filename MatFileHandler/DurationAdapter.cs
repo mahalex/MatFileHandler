@@ -25,7 +25,8 @@ namespace MatFileHandler
             }
 
             var dataObject = matObject["millis", 0];
-            data = dataObject.ConvertToDoubleArray();
+            data = dataObject.ConvertToDoubleArray()
+                ?? throw new HandlerException("Cannot extract data for the duration adapter.");
             dimensions = dataObject.Dimensions;
         }
 

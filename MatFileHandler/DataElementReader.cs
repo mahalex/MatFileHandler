@@ -194,7 +194,7 @@ namespace MatFileHandler
             };
         }
 
-        private static (BinaryReader, Tag) ReadTag(BinaryReader reader)
+        private static (BinaryReader reader, Tag tag) ReadTag(BinaryReader reader)
         {
             var type = reader.ReadInt32();
             var typeHi = type >> 16;
@@ -222,7 +222,8 @@ namespace MatFileHandler
             var elements = new List<IArray>();
             for (var i = 0; i < numberOfElements; i++)
             {
-                var element = Read(reader) as IArray;
+                var element = Read(reader) as IArray
+                    ?? throw new HandlerException("Unable to read cell array.");
                 elements.Add(element);
             }
 
@@ -319,8 +320,9 @@ namespace MatFileHandler
             string name,
             int fieldNameLength)
         {
-            var element = Read(reader);
-            var fieldNames = ReadFieldNames(element as MiNum<sbyte>, fieldNameLength);
+            var element = Read(reader) as MiNum<sbyte>
+                ?? throw new HandlerException("Unable to parse structure field names.");
+            var fieldNames = ReadFieldNames(element, fieldNameLength);
             var fields = new Dictionary<string, List<IArray>>();
             foreach (var fieldName in fieldNames)
             {
@@ -332,7 +334,8 @@ namespace MatFileHandler
             {
                 foreach (var fieldName in fieldNames)
                 {
-                    var field = Read(reader) as IArray;
+                    var field = Read(reader) as IArray
+                        ?? throw new HandlerException("Unable to parse field name.");
                     fields[fieldName].Add(field);
                 }
             }
@@ -398,7 +401,7 @@ namespace MatFileHandler
 
             var element4 = Read(reader);
             var data = ReadData(element4);
-            DataElement imaginaryData = null;
+            DataElement? imaginaryData = null;
             if (flags.Variable.HasFlag(Variable.IsComplex))
             {
                 var element5 = Read(reader);

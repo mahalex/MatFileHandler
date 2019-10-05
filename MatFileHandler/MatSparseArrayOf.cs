@@ -26,7 +26,7 @@ namespace MatFileHandler
             SparseArrayFlags flags,
             int[] dimensions,
             string name,
-            Dictionary<(int, int), T> data)
+            Dictionary<(int row, int column), T> data)
             : base(flags.ArrayFlags, dimensions, name)
         {
             DataDictionary = data;
@@ -39,9 +39,9 @@ namespace MatFileHandler
                 .ToArray();
 
         /// <inheritdoc />
-        public IReadOnlyDictionary<(int, int), T> Data => DataDictionary;
+        public IReadOnlyDictionary<(int row, int column), T> Data => DataDictionary;
 
-        private Dictionary<(int, int), T> DataDictionary { get; }
+        private Dictionary<(int row, int column), T> DataDictionary { get; }
 
         /// <inheritdoc />
         public T this[params int[] list]

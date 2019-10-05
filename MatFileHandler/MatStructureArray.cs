@@ -35,7 +35,19 @@ namespace MatFileHandler
         /// <summary>
         /// Gets null: not implemented.
         /// </summary>
-        public IReadOnlyDictionary<string, IArray>[] Data => null;
+        public IReadOnlyDictionary<string, IArray>[] Data
+        {
+            get
+            {
+                var result = new IReadOnlyDictionary<string, IArray>[Count];
+                for (var i = 0; i < Count; i++)
+                {
+                    result[i] = FieldNames.ToDictionary(name => name, name => Fields[name][i]);
+                }
+
+                return result;
+            }
+        }
 
         /// <summary>
         /// Gets a dictionary that maps field names to lists of values.
@@ -128,7 +140,7 @@ namespace MatFileHandler
             /// <summary>
             /// Checks if the structure has a given field.
             /// </summary>
-            /// <param name="key">Field name</param>
+            /// <param name="key">Field name.</param>
             /// <returns>True iff the structure has a given field.</returns>
             public bool ContainsKey(string key) => Parent.Fields.ContainsKey(key);
 
@@ -138,12 +150,14 @@ namespace MatFileHandler
             /// <param name="key">Field name.</param>
             /// <param name="value">Value (or null if the field is not present).</param>
             /// <returns>Success status of the query.</returns>
-            public bool TryGetValue(string key, out IArray value)
+#pragma warning disable CS8614
+            public bool TryGetValue(string key, out IArray? value)
+#pragma warning restore CS8614
             {
                 var success = Parent.Fields.TryGetValue(key, out var array);
                 if (!success)
                 {
-                    value = default(IArray);
+                    value = default;
                     return false;
                 }
                 value = array[Index];

@@ -54,13 +54,13 @@ namespace MatFileHandler
         }
 
         /// <inheritdoc />
-        public virtual double[] ConvertToDoubleArray()
+        public virtual double[]? ConvertToDoubleArray()
         {
             return null;
         }
 
         /// <inheritdoc />
-        public virtual Complex[] ConvertToComplexArray()
+        public virtual Complex[]? ConvertToComplexArray()
         {
             return null;
         }

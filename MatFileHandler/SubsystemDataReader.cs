@@ -23,65 +23,27 @@ namespace MatFileHandler
         /// <returns>Subsystem data read.</returns>
         public static SubsystemData Read(byte[] bytes, SubsystemData subsystemData)
         {
-            List<RawVariable> rawVariables = null;
-            using (var stream = new MemoryStream(bytes))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    reader.ReadBytes(8);
-                    rawVariables = MatFileReader.ReadRawVariables(reader, -1, subsystemData);
-                }
-            }
+            var rawVariables = ReadRawVariables(bytes, subsystemData);
 
             // Parse subsystem data.
-            var mainVariable = rawVariables[0].DataElement as IStructureArray;
-            var mcosData = mainVariable["MCOS", 0] as Opaque;
-            var opaqueData = mcosData.RawData as ICellArray;
-            var info = (opaqueData[0] as IArrayOf<byte>).Data;
+            var mainVariable = rawVariables[0].DataElement as IStructureArray
+                               ?? throw new HandlerException("Subsystem data must be a structure array.");
+            var mcosData = mainVariable["MCOS", 0] as Opaque
+                           ?? throw new HandlerException("MCOS data must be an opaque object.");
+            var opaqueData = mcosData.RawData as ICellArray
+                             ?? throw new HandlerException("Opaque data must be a cell array.");
+            var info = (opaqueData[0] as IArrayOf<byte>)?.Data
+                       ?? throw new HandlerException("Opaque data info must be a byte array.");
             var (offsets, position) = ReadOffsets(info, 0);
             var fieldNames = ReadFieldNames(info, position, offsets[1]);
             var numberOfClasses = ((offsets[3] - offsets[2]) / 16) - 1;
-            Dictionary<int, string> classIdToName = null;
-            using (var stream = new MemoryStream(info, offsets[2], offsets[3] - offsets[2]))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    classIdToName = ReadClassNames(reader, fieldNames, numberOfClasses);
-                }
-            }
-
+            var classIdToName = ReadClassIdToName(info, offsets, fieldNames, numberOfClasses);
             var numberOfEmbeddedObjects = (offsets[4] - offsets[3] - 8) / 16;
-            Dictionary<int, Dictionary<int, int>> embeddedObjectPositionsToValues = null;
-            using (var stream = new MemoryStream(info, offsets[3], offsets[4] - offsets[3]))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    embeddedObjectPositionsToValues =
-                        ReadEmbeddedObjectPositionsToValuesMapping(reader, numberOfEmbeddedObjects);
-                }
-            }
-
+            var embeddedObjectPositionsToValues = ReadEmbeddedObjectPositionsToValues(info, offsets, numberOfEmbeddedObjects);
             var numberOfObjects = ((offsets[5] - offsets[4]) / 24) - 1;
-            Dictionary<int, ObjectClassInformation> objectClasses = null;
-            using (var stream = new MemoryStream(info, offsets[4], offsets[5] - offsets[4]))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    objectClasses = ReadObjectClasses(reader, numberOfObjects);
-                }
-            }
-
+            var objectClasses = ReadObjectClassInformations(info, offsets, numberOfObjects);
             var numberOfObjectPositions = objectClasses.Values.Count(x => x.ObjectPosition != 0);
-
-            Dictionary<int, Dictionary<int, int>> objectPositionsToValues = null;
-            using (var stream = new MemoryStream(info, offsets[5], offsets[6] - offsets[5]))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    objectPositionsToValues = ReadObjectPositionsToValuesMapping(reader, numberOfObjectPositions);
-                }
-            }
-
+            var objectPositionsToValues = ReadObjectPositionsToValues(info, offsets, numberOfObjectPositions);
             var (classInformation, objectInformation) =
                 GatherClassAndObjectInformation(
                     classIdToName,
@@ -89,7 +51,6 @@ namespace MatFileHandler
                     objectClasses,
                     objectPositionsToValues,
                     embeddedObjectPositionsToValues);
-
             var allFields = objectInformation.Values.SelectMany(obj => obj.FieldLinks.Values);
             var data = new Dictionary<int, IArray>();
             foreach (var i in allFields)
@@ -100,7 +61,44 @@ namespace MatFileHandler
             return new SubsystemData(classInformation, objectInformation, data);
         }
 
-        private static (Dictionary<int, SubsystemData.ClassInfo>, Dictionary<int, SubsystemData.ObjectInfo>)
+        private static Dictionary<int, Dictionary<int, int>> ReadObjectPositionsToValues(byte[] info, int[] offsets, int numberOfObjectPositions)
+        {
+            using var stream = new MemoryStream(info, offsets[5], offsets[6] - offsets[5]);
+            using var reader = new BinaryReader(stream);
+            return ReadObjectPositionsToValuesMapping(reader, numberOfObjectPositions);
+        }
+
+        private static Dictionary<int, ObjectClassInformation> ReadObjectClassInformations(byte[] info, int[] offsets, int numberOfObjects)
+        {
+            using var stream = new MemoryStream(info, offsets[4], offsets[5] - offsets[4]);
+            using var reader = new BinaryReader(stream);
+            return ReadObjectClasses(reader, numberOfObjects);
+        }
+
+        private static Dictionary<int, Dictionary<int, int>> ReadEmbeddedObjectPositionsToValues(byte[] info, int[] offsets, int numberOfEmbeddedObjects)
+        {
+            using var stream = new MemoryStream(info, offsets[3], offsets[4] - offsets[3]);
+            using var reader = new BinaryReader(stream);
+            return ReadEmbeddedObjectPositionsToValuesMapping(reader, numberOfEmbeddedObjects);
+        }
+
+        private static Dictionary<int, string> ReadClassIdToName(byte[] info, int[] offsets, string[] fieldNames, int numberOfClasses)
+        {
+            using var stream = new MemoryStream(info, offsets[2], offsets[3] - offsets[2]);
+            using var reader = new BinaryReader(stream);
+            return ReadClassNames(reader, fieldNames, numberOfClasses);
+        }
+
+        private static List<RawVariable> ReadRawVariables(byte[] bytes, SubsystemData subsystemData)
+        {
+            using var stream = new MemoryStream(bytes);
+            using var reader = new BinaryReader(stream);
+            reader.ReadBytes(8);
+            return MatFileReader.ReadRawVariables(reader, -1, subsystemData);
+        }
+
+        private static (Dictionary<int, SubsystemData.ClassInfo> classInfos,
+            Dictionary<int, SubsystemData.ObjectInfo> objectInfos)
             GatherClassAndObjectInformation(
                 Dictionary<int, string> classIdToName,
                 string[] fieldNames,
@@ -318,7 +316,7 @@ namespace MatFileHandler
                         string.Empty,
                         string.Empty,
                         dimensions,
-                        array as DataElement,
+                        uintArray,
                         indexToObjectId,
                         classIndex,
                         subsystemData);

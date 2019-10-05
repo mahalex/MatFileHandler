@@ -30,20 +30,24 @@ namespace MatFileHandler
             }
 
             epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            var dataArray = matObject["data", 0] as IArrayOf<double>;
-            if (dataArray is null)
+
+            switch (matObject["data", 0])
             {
-                var dataComplex = matObject["data", 0] as IArrayOf<Complex>;
-                var complexData = dataComplex.ConvertToComplexArray();
-                data = complexData.Select(c => c.Real).ToArray();
-                data2 = complexData.Select(c => c.Imaginary).ToArray();
-                dimensions = dataComplex.Dimensions;
-            }
-            else
-            {
-                data = dataArray.ConvertToDoubleArray();
-                data2 = new double[data.Length];
-                dimensions = dataArray.Dimensions;
+                case IArrayOf<double> dataArray:
+                    data = dataArray.ConvertToDoubleArray()
+                        ?? throw new HandlerException("Cannot extract data for the datetime adapter.");
+                    data2 = new double[data.Length];
+                    dimensions = dataArray.Dimensions;
+                    break;
+                case IArrayOf<Complex> dataComplex:
+                    var complexData = dataComplex.ConvertToComplexArray()
+                        ?? throw new HandlerException("Cannot extract data for the datetime adapter.");
+                    data = complexData.Select(c => c.Real).ToArray();
+                    data2 = complexData.Select(c => c.Imaginary).ToArray();
+                    dimensions = dataComplex.Dimensions;
+                    break;
+                default:
+                    throw new HandlerException("Datetime data not found.");
             }
         }
 
