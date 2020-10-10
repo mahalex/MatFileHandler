@@ -150,9 +150,9 @@ namespace MatFileHandler
             /// <param name="key">Field name.</param>
             /// <param name="value">Value (or null if the field is not present).</param>
             /// <returns>Success status of the query.</returns>
-#pragma warning disable CS8614
+#pragma warning disable CS8767
             public bool TryGetValue(string key, out IArray? value)
-#pragma warning restore CS8614
+#pragma warning restore CS8767
             {
                 var success = Parent.Fields.TryGetValue(key, out var array);
                 if (!success)

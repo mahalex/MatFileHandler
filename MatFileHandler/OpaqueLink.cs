@@ -175,9 +175,9 @@ namespace MatFileHandler
             }
 
             /// <inheritdoc />
-#pragma warning disable CS8614
+#pragma warning disable CS8767
             public bool TryGetValue(string key, out IArray? value)
-#pragma warning restore CS8614
+#pragma warning restore CS8767
             {
                 return parent.TryGetValue(key, out value, index);
             }
