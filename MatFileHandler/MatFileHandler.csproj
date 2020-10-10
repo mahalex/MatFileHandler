@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461;net472</TargetFrameworks>
-    <PackageVersion>1.3.0-beta4</PackageVersion>
+    <PackageVersion>1.3.0</PackageVersion>
     <PackageId>MatFileHandler</PackageId>
     <Title>A library for reading and writing MATLAB .mat files.</Title>
     <Authors>Alexander Luzgarev</Authors>
     <Description>MatFileHandler provides a simple interface for reading and writing MATLAB .mat files (of so-called "Level 5") and extracting the contents of numerical arrays, logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.</Description>
-    <Copyright>Copyright 2017-2018 Alexander Luzgarev</Copyright>
+    <Copyright>Copyright 2017-2020 Alexander Luzgarev</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
     <PackageReleaseNotes>First release.</PackageReleaseNotes>
