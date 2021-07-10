@@ -20,5 +20,13 @@ namespace MatFileHandler
         /// </summary>
         /// <param name="variableName">Variable name.</param>
         IVariable this[string variableName] { get; set; }
+
+        /// <summary>
+        /// Gets the variable with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the variable to get.</param>
+        /// <param name="variable">When this method returns, contains the variable with the specified name, if it is found; otherwise, null.</param>
+        /// <returns>True if the file contains a variable with the specified name; otherwise, false.</returns>
+        public bool TryGetVariable(string name, out IVariable? variable);
     }
 }
