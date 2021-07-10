@@ -1,8 +1,6 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace MatFileHandler
@@ -57,6 +55,14 @@ namespace MatFileHandler
                 double[] doubleData => doubleData,
                 _ => throw new HandlerException("Cannot convert data to double array.")
             };
+        }
+
+        /// <inheritdoc />
+        public override Array? ConvertToMultidimensionalDoubleArray()
+        {
+            var doubleData = ConvertToDoubleArray();
+            var rearrangedData = Dimensions.UnflattenArray(doubleData);
+            return rearrangedData;
         }
 
         /// <summary>

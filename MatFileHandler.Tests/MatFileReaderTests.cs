@@ -201,6 +201,19 @@ namespace MatFileHandler.Tests
             Assert.That((structure["y", 0, 2] as IArrayOf<double>)?[0, 2], Is.EqualTo(3.0));
             Assert.That((structure["x", 1, 2] as IArrayOf<float>)?[0], Is.EqualTo(1.5f));
             Assert.That(structure["y", 1, 2].IsEmpty, Is.True);
+
+            Assert.That(structure["y", 0, 2].ConvertTo2dDoubleArray(), Is.EqualTo(
+                new double[,]
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 },
+                }));
+            Assert.That(structure["y", 0, 2].ConvertToMultidimensionalDoubleArray(), Is.EqualTo(
+                new double[,]
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 },
+                }));
         }
 
         /// <summary>
@@ -221,6 +234,15 @@ namespace MatFileHandler.Tests
             Assert.That(sparseArray[0, 4], Is.EqualTo(0.0));
             Assert.That(sparseArray[3, 0], Is.EqualTo(0.0));
             Assert.That(sparseArray[3, 4], Is.EqualTo(0.0));
+
+            Assert.That(sparseArray.ConvertTo2dDoubleArray(), Is.EqualTo(
+                new double[,]
+                {
+                    { 0, 0, 0, 0, 0 },
+                    { 0, 1, 2, 0, 0 },
+                    { 0, 3, 0, 4, 0 },
+                    { 0, 0, 0, 0, 0 },
+                }));
         }
 
         /// <summary>
@@ -460,6 +482,47 @@ namespace MatFileHandler.Tests
             var datetime = new DatetimeAdapter(obj);
             var d0 = datetime[0];
             Assert.That(d0, Is.Null);
+        }
+
+        [Test]
+        public void Test_3DArrays()
+        {
+            var matFile = GetTests("good")["issue20.mat"];
+            var obj = matFile["a3d"].Value;
+            var values = obj.ConvertToDoubleArray();
+            Assert.That(values, Is.EqualTo(Enumerable.Range(1, 24)));
+            var expected = new double[3, 4, 2]
+            {
+                {
+                    { 1, 13 },
+                    { 4, 16 },
+                    { 7, 19 },
+                    { 10, 22 },
+                },
+                {
+                    { 2, 14 },
+                    { 5, 17 },
+                    { 8, 20 },
+                    { 11, 23 },
+                },
+                {
+                    { 3, 15 },
+                    { 6, 18 },
+                    { 9, 21 },
+                    { 12, 24 },
+                },
+            };
+            Assert.That(obj.ConvertToMultidimensionalDoubleArray(), Is.EqualTo(expected));
+            Assert.That(obj.ConvertTo2dDoubleArray(), Is.EqualTo(null));
+        }
+
+        [Test]
+        public void Test_4DArrays()
+        {
+            var matFile = GetTests("good")["issue20.mat"];
+            var obj = matFile["a4d"].Value;
+            Assert.That(obj.ConvertToDoubleArray(), Is.EqualTo(Enumerable.Range(1, 120)));
+            Assert.That(obj.ConvertTo2dDoubleArray(), Is.EqualTo(null));
         }
 
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>

@@ -34,5 +34,11 @@ namespace MatFileHandler
             get => _variables[variableName];
             set => _variables[variableName] = value;
         }
+
+        /// <inheritdoc />
+        public bool TryGetVariable(string name, out IVariable value)
+        {
+            return _variables.TryGetValue(name, out value);
+        }
     }
 }

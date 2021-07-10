@@ -1,5 +1,6 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
+using System;
 using System.Numerics;
 
 namespace MatFileHandler
@@ -55,6 +56,18 @@ namespace MatFileHandler
 
         /// <inheritdoc />
         public virtual double[]? ConvertToDoubleArray()
+        {
+            return null;
+        }
+
+        /// <inheritdoc />
+        public virtual double[,]? ConvertTo2dDoubleArray()
+        {
+            return ConvertToMultidimensionalDoubleArray() as double[,];
+        }
+
+        /// <inheritdoc />
+        public virtual Array? ConvertToMultidimensionalDoubleArray()
         {
             return null;
         }

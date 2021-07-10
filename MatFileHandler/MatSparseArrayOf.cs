@@ -64,6 +64,23 @@ namespace MatFileHandler
             return data as double[] ?? data.Select(x => Convert.ToDouble(x)).ToArray();
         }
 
+        /// <inheritdoc />
+        public override Array? ConvertToMultidimensionalDoubleArray()
+        {
+            if (Dimensions.Length != 2)
+            {
+                return null;
+            }
+
+            var result = new double[Dimensions[0], Dimensions[1]];
+            foreach (var pair in Data)
+            {
+                result[pair.Key.row, pair.Key.column] = Convert.ToDouble(pair.Value);
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Tries to convert the array to an array of Complex values.
         /// </summary>
