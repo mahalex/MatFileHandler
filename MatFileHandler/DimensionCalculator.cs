@@ -1,5 +1,6 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
+using System;
 using System.Linq;
 
 namespace MatFileHandler
@@ -35,6 +36,49 @@ namespace MatFileHandler
         public static int NumberOfElements(this int[] dimensions)
         {
             return dimensions.Aggregate(1, (x, y) => x * y);
+        }
+
+        /// <summary>
+        /// Rearrange data from a flat (column-major) array into a multi-dimensional array.
+        /// </summary>
+        /// <typeparam name="T">Array element type.</typeparam>
+        /// <param name="dimensions">Target array dimensions.</param>
+        /// <param name="data">Flat (column-major) data to rearrange.</param>
+        /// <returns>An array of specified dimensions containing data from the original flat array, layed out according to column-major order.</returns>
+        public static Array UnflattenArray<T>(this int[] dimensions, T[] data)
+        {
+            var result = Array.CreateInstance(typeof(T), dimensions);
+            var n = dimensions.NumberOfElements();
+            var indices = new int[dimensions.Length];
+            for (var i = 0; i < n; i++)
+            {
+                result.SetValue(data[i], indices);
+                IncrementMultiIndex(dimensions, indices);
+            }
+
+            return result;
+        }
+
+        private static void IncrementMultiIndex(int[] dimensions, int[] indices)
+        {
+            var currentPosition = 0;
+            while (true)
+            {
+                if (currentPosition >= indices.Length)
+                {
+                    break;
+                }
+                indices[currentPosition]++;
+                if (indices[currentPosition] >= dimensions[currentPosition])
+                {
+                    indices[currentPosition] = 0;
+                    currentPosition++;
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }
