@@ -4,14 +4,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using NUnit.Framework;
+using Xunit;
 
 namespace MatFileHandler.Tests
 {
     /// <summary>
     /// Tests of file reading API.
     /// </summary>
-    [TestFixture]
     public class MatFileReaderTests
     {
         private const string TestDirectory = "test-data";
@@ -20,26 +19,27 @@ namespace MatFileHandler.Tests
         /// Test reading all files in a given test set.
         /// </summary>
         /// <param name="testSet">Name of the set.</param>
-        [TestCase("good")]
+        [Theory]
+        [InlineData("good")]
         public void TestReader(string testSet)
         {
             foreach (var matFile in GetTests(testSet).GetAllTestData())
             {
-                Assert.That(matFile.Variables, Is.Not.Empty);
+                Assert.NotEmpty(matFile.Variables);
             }
         }
 
         /// <summary>
         /// Test reading lower and upper limits of integer data types.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestLimits()
         {
             var matFile = GetTests("good")["limits"];
             IArray array;
             array = matFile["int8_"].Value;
             CheckLimits(array as IArrayOf<sbyte>, CommonData.Int8Limits);
-            Assert.That(array.ConvertToDoubleArray(), Is.EqualTo(new[] { -128.0, 127.0 }));
+            Assert.Equal(new[] { -128.0, 127.0 }, array.ConvertToDoubleArray());
 
             array = matFile["uint8_"].Value;
             CheckLimits(array as IArrayOf<byte>, CommonData.UInt8Limits);
@@ -66,16 +66,16 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing lower and upper limits of integer-based complex data types.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestComplexLimits()
         {
             var matFile = GetTests("good")["limits_complex"];
             IArray array;
             array = matFile["int8_complex"].Value;
             CheckComplexLimits(array as IArrayOf<ComplexOf<sbyte>>, CommonData.Int8Limits);
-            Assert.That(
-                array.ConvertToComplexArray(),
-                Is.EqualTo(new[] { -128.0 + (127.0 * Complex.ImaginaryOne), 127.0 - (128.0 * Complex.ImaginaryOne) }));
+            Assert.Equal(
+                new[] { -128.0 + (127.0 * Complex.ImaginaryOne), 127.0 - (128.0 * Complex.ImaginaryOne) },
+                array.ConvertToComplexArray());
 
             array = matFile["uint8_complex"].Value;
             CheckComplexLimits(array as IArrayOf<ComplexOf<byte>>, CommonData.UInt8Limits);
@@ -102,395 +102,398 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test reading an ASCII-encoded string.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestAscii()
         {
             var matFile = GetTests("good")["ascii"];
             var arrayAscii = matFile["s"].Value as ICharArray;
-            Assert.That(arrayAscii, Is.Not.Null);
-            Assert.That(arrayAscii.Dimensions, Is.EqualTo(new[] { 1, 3 }));
-            Assert.That(arrayAscii.String, Is.EqualTo("abc"));
-            Assert.That(arrayAscii[2], Is.EqualTo('c'));
+            Assert.NotNull(arrayAscii);
+            Assert.Equal(new[] { 1, 3 }, arrayAscii.Dimensions);
+            Assert.Equal("abc", arrayAscii.String);
+            Assert.Equal('c', arrayAscii[2]);
         }
 
         /// <summary>
         /// Test reading a Unicode string.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestUnicode()
         {
             var matFile = GetTests("good")["unicode"];
             var arrayUnicode = matFile["s"].Value as ICharArray;
-            Assert.That(arrayUnicode, Is.Not.Null);
-            Assert.That(arrayUnicode.Dimensions, Is.EqualTo(new[] { 1, 2 }));
-            Assert.That(arrayUnicode.String, Is.EqualTo("必フ"));
-            Assert.That(arrayUnicode[0], Is.EqualTo('必'));
-            Assert.That(arrayUnicode[1], Is.EqualTo('フ'));
+            Assert.NotNull(arrayUnicode);
+            Assert.Equal(new[] { 1, 2 }, arrayUnicode.Dimensions);
+            Assert.Equal("必フ", arrayUnicode.String);
+            Assert.Equal('必', arrayUnicode[0]);
+            Assert.Equal('フ', arrayUnicode[1]);
         }
 
         /// <summary>
         /// Test reading a wide Unicode string.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestUnicodeWide()
         {
             var matFile = GetTests("good")["unicode-wide"];
             var arrayUnicodeWide = matFile["s"].Value as ICharArray;
-            Assert.That(arrayUnicodeWide, Is.Not.Null);
-            Assert.That(arrayUnicodeWide.Dimensions, Is.EqualTo(new[] { 1, 2 }));
-            Assert.That(arrayUnicodeWide.String, Is.EqualTo("🍆"));
+            Assert.NotNull(arrayUnicodeWide);
+            Assert.Equal(new[] { 1, 2 }, arrayUnicodeWide.Dimensions);
+            Assert.Equal("🍆", arrayUnicodeWide.String);
         }
 
         /// <summary>
         /// Test converting a structure array to a Double array.
         /// </summary>
-        /// <returns>Should return null.</returns>
-        [Test(ExpectedResult = null)]
-        public double[] TestConvertToDoubleArray()
+        [Fact]
+        public void TestConvertToDoubleArray()
         {
             var matFile = GetTests("good")["struct"];
             var array = matFile.Variables[0].Value;
-            return array.ConvertToDoubleArray();
+            Assert.Null(array.ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test converting a structure array to a Complex array.
         /// </summary>
         /// <returns>Should return null.</returns>
-        [Test(ExpectedResult = null)]
-        public Complex[] TestConvertToComplexArray()
+        [Fact]
+        public void TestConvertToComplexArray()
         {
             var matFile = GetTests("good")["struct"];
             var array = matFile.Variables[0].Value;
-            return array.ConvertToComplexArray();
+            Assert.Null(array.ConvertToComplexArray());
         }
 
         /// <summary>
         /// Test reading a structure array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestStruct()
         {
             var matFile = GetTests("good")["struct"];
             var structure = matFile["struct_"].Value as IStructureArray;
-            Assert.That(structure, Is.Not.Null);
-            Assert.That(structure.FieldNames, Is.EquivalentTo(new[] { "x", "y" }));
+            Assert.NotNull(structure);
+            Assert.Equal(new[] { "x", "y" }, structure.FieldNames);
             var element = structure[0, 0];
-            Assert.That(element.ContainsKey("x"), Is.True);
-            Assert.That(element.Count, Is.EqualTo(2));
-            Assert.That(element.TryGetValue("x", out var _), Is.True);
-            Assert.That(element.TryGetValue("z", out var _), Is.False);
-            Assert.That(element.Keys, Has.Exactly(2).Items);
-            Assert.That(element.Values, Has.Exactly(2).Items);
+            Assert.True(element.ContainsKey("x"));
+            Assert.Equal(2, element.Count);
+            Assert.True(element.TryGetValue("x", out var _));
+            Assert.False(element.TryGetValue("z", out var _));
+            Assert.Equal(2, element.Keys.Count());
+            Assert.Equal(2, element.Values.Count());
             var keys = element.Select(pair => pair.Key);
-            Assert.That(keys, Is.EquivalentTo(new[] { "x", "y" }));
+            Assert.Equal(new[] { "x", "y" }, keys);
 
-            Assert.That((element["x"] as IArrayOf<double>)?[0], Is.EqualTo(12.345));
+            Assert.Equal(12.345, (element["x"] as IArrayOf<double>)?[0]);
 
-            Assert.That((structure["x", 0, 0] as IArrayOf<double>)?[0], Is.EqualTo(12.345));
-            Assert.That((structure["y", 0, 0] as ICharArray)?.String, Is.EqualTo("abc"));
-            Assert.That((structure["x", 1, 0] as ICharArray)?.String, Is.EqualTo("xyz"));
-            Assert.That(structure["y", 1, 0].IsEmpty, Is.True);
-            Assert.That((structure["x", 0, 1] as IArrayOf<double>)?[0], Is.EqualTo(2.0));
-            Assert.That((structure["y", 0, 1] as IArrayOf<double>)?[0], Is.EqualTo(13.0));
-            Assert.That(structure["x", 1, 1].IsEmpty, Is.True);
-            Assert.That((structure["y", 1, 1] as ICharArray)?[0, 0], Is.EqualTo('a'));
-            Assert.That(((structure["x", 0, 2] as ICellArray)?[0] as ICharArray)?.String, Is.EqualTo("x"));
-            Assert.That(((structure["x", 0, 2] as ICellArray)?[1] as ICharArray)?.String, Is.EqualTo("yz"));
-            Assert.That((structure["y", 0, 2] as IArrayOf<double>)?.Dimensions, Is.EqualTo(new[] { 2, 3 }));
-            Assert.That((structure["y", 0, 2] as IArrayOf<double>)?[0, 2], Is.EqualTo(3.0));
-            Assert.That((structure["x", 1, 2] as IArrayOf<float>)?[0], Is.EqualTo(1.5f));
-            Assert.That(structure["y", 1, 2].IsEmpty, Is.True);
+            Assert.Equal(12.345, (structure["x", 0, 0] as IArrayOf<double>)?[0]);
+            Assert.Equal(2.0, (structure["x", 0, 1] as IArrayOf<double>)?[0]);
+            Assert.Equal("x", ((structure["x", 0, 2] as ICellArray)?[0] as ICharArray)?.String);
+            Assert.Equal("yz", ((structure["x", 0, 2] as ICellArray)?[1] as ICharArray)?.String);
+            Assert.Equal("xyz", (structure["x", 1, 0] as ICharArray)?.String);
+            Assert.True(structure["x", 1, 1].IsEmpty);
+            Assert.Equal(1.5f, (structure["x", 1, 2] as IArrayOf<float>)?[0]);
 
-            Assert.That(structure["y", 0, 2].ConvertTo2dDoubleArray(), Is.EqualTo(
+            Assert.Equal("abc", (structure["y", 0, 0] as ICharArray)?.String);
+            Assert.Equal(13.0, (structure["y", 0, 1] as IArrayOf<double>)?[0]);
+            Assert.Equal(new[] { 2, 3 }, (structure["y", 0, 2] as IArrayOf<double>)?.Dimensions);
+            Assert.Equal(3.0, (structure["y", 0, 2] as IArrayOf<double>)?[0, 2]);
+            Assert.True(structure["y", 1, 0].IsEmpty);
+            Assert.Equal('a', (structure["y", 1, 1] as ICharArray)?[0, 0]);
+            Assert.True(structure["y", 1, 2].IsEmpty);
+
+            Assert.Equal(
                 new double[,]
                 {
                     { 1, 2, 3 },
                     { 4, 5, 6 },
-                }));
-            Assert.That(structure["y", 0, 2].ConvertToMultidimensionalDoubleArray(), Is.EqualTo(
+                },
+                structure["y", 0, 2].ConvertTo2dDoubleArray());
+            Assert.Equal(
                 new double[,]
                 {
                     { 1, 2, 3 },
                     { 4, 5, 6 },
-                }));
+                },
+                structure["y", 0, 2].ConvertToMultidimensionalDoubleArray());
         }
 
         /// <summary>
         /// Test reading a sparse array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSparse()
         {
             var matFile = GetTests("good")["sparse"];
             var sparseArray = matFile["sparse_"].Value as ISparseArrayOf<double>;
-            Assert.That(sparseArray, Is.Not.Null);
-            Assert.That(sparseArray.Dimensions, Is.EqualTo(new[] { 4, 5 }));
-            Assert.That(sparseArray.Data[(1, 1)], Is.EqualTo(1.0));
-            Assert.That(sparseArray[1, 1], Is.EqualTo(1.0));
-            Assert.That(sparseArray[1, 2], Is.EqualTo(2.0));
-            Assert.That(sparseArray[2, 1], Is.EqualTo(3.0));
-            Assert.That(sparseArray[2, 3], Is.EqualTo(4.0));
-            Assert.That(sparseArray[0, 4], Is.EqualTo(0.0));
-            Assert.That(sparseArray[3, 0], Is.EqualTo(0.0));
-            Assert.That(sparseArray[3, 4], Is.EqualTo(0.0));
+            Assert.NotNull(sparseArray);
+            Assert.Equal(new[] { 4, 5 }, sparseArray.Dimensions);
+            Assert.Equal(1.0, sparseArray.Data[(1, 1)]);
+            Assert.Equal(1.0, sparseArray[1, 1]);
+            Assert.Equal(2.0, sparseArray[1, 2]);
+            Assert.Equal(3.0, sparseArray[2, 1]);
+            Assert.Equal(4.0, sparseArray[2, 3]);
+            Assert.Equal(0.0, sparseArray[0, 4]);
+            Assert.Equal(0.0, sparseArray[3, 0]);
+            Assert.Equal(0.0, sparseArray[3, 4]);
 
-            Assert.That(sparseArray.ConvertTo2dDoubleArray(), Is.EqualTo(
+            Assert.Equal(
                 new double[,]
                 {
                     { 0, 0, 0, 0, 0 },
                     { 0, 1, 2, 0, 0 },
                     { 0, 3, 0, 4, 0 },
                     { 0, 0, 0, 0, 0 },
-                }));
+                },
+                sparseArray.ConvertTo2dDoubleArray());
         }
 
         /// <summary>
         /// Test reading a logical array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestLogical()
         {
             var matFile = GetTests("good")["logical"];
             var array = matFile["logical_"].Value;
             var logicalArray = array as IArrayOf<bool>;
-            Assert.That(logicalArray, Is.Not.Null);
-            Assert.That(logicalArray[0, 0], Is.True);
-            Assert.That(logicalArray[0, 1], Is.True);
-            Assert.That(logicalArray[0, 2], Is.False);
-            Assert.That(logicalArray[1, 0], Is.False);
-            Assert.That(logicalArray[1, 1], Is.True);
-            Assert.That(logicalArray[1, 2], Is.True);
+            Assert.NotNull(logicalArray);
+            Assert.True(logicalArray[0, 0]);
+            Assert.True(logicalArray[0, 1]);
+            Assert.False(logicalArray[0, 2]);
+            Assert.False(logicalArray[1, 0]);
+            Assert.True(logicalArray[1, 1]);
+            Assert.True(logicalArray[1, 2]);
         }
 
         /// <summary>
         /// Test reading a sparse logical array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSparseLogical()
         {
             var matFile = GetTests("good")["sparse_logical"];
             var array = matFile["sparse_logical"].Value;
             var sparseArray = array as ISparseArrayOf<bool>;
-            Assert.That(sparseArray, Is.Not.Null);
-            Assert.That(sparseArray.Data[(0, 0)], Is.True);
-            Assert.That(sparseArray[0, 0], Is.True);
-            Assert.That(sparseArray[0, 1], Is.True);
-            Assert.That(sparseArray[0, 2], Is.False);
-            Assert.That(sparseArray[1, 0], Is.False);
-            Assert.That(sparseArray[1, 1], Is.True);
-            Assert.That(sparseArray[1, 2], Is.True);
+            Assert.NotNull (sparseArray);
+            Assert.True(sparseArray.Data[(0, 0)]);
+            Assert.True(sparseArray[0, 0]);
+            Assert.True(sparseArray[0, 1]);
+            Assert.False(sparseArray[0, 2]);
+            Assert.False(sparseArray[1, 0]);
+            Assert.True(sparseArray[1, 1]);
+            Assert.True(sparseArray[1, 2]);
         }
 
         /// <summary>
         /// Test reading a global variable.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestGlobal()
         {
             var matFile = GetTests("good")["global"];
             var variable = matFile.Variables.First();
-            Assert.That(variable.IsGlobal, Is.True);
+            Assert.True(variable.IsGlobal);
         }
 
         /// <summary>
         /// Test reading a sparse complex array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TextSparseComplex()
         {
             var matFile = GetTests("good")["sparse_complex"];
             var array = matFile["sparse_complex"].Value;
             var sparseArray = array as ISparseArrayOf<Complex>;
-            Assert.That(sparseArray, Is.Not.Null);
-            Assert.That(sparseArray[0, 0], Is.EqualTo(-1.5 + (2.5 * Complex.ImaginaryOne)));
-            Assert.That(sparseArray[1, 0], Is.EqualTo(2 - (3 * Complex.ImaginaryOne)));
-            Assert.That(sparseArray[0, 1], Is.EqualTo(Complex.Zero));
-            Assert.That(sparseArray[1, 1], Is.EqualTo(0.5 + (1.0 * Complex.ImaginaryOne)));
+            Assert.NotNull(sparseArray);
+            Assert.Equal(-1.5 + (2.5 * Complex.ImaginaryOne), sparseArray[0, 0]);
+            Assert.Equal(2 - (3 * Complex.ImaginaryOne), sparseArray[1, 0]);
+            Assert.Equal(Complex.Zero, sparseArray[0, 1]);
+            Assert.Equal(0.5 + (1.0 * Complex.ImaginaryOne), sparseArray[1, 1]);
         }
 
         /// <summary>
         /// Test reading an object.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestObject()
         {
             var matFile = GetTests("good")["object"];
             var obj = matFile["object_"].Value as IMatObject;
-            Assert.IsNotNull(obj);
-            Assert.That(obj.ClassName, Is.EqualTo("Point"));
-            Assert.That(obj.FieldNames, Is.EquivalentTo(new[] { "x", "y" }));
-            Assert.That(obj["x", 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 3.0 }));
-            Assert.That(obj["y", 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 5.0 }));
-            Assert.That(obj["x", 1].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
-            Assert.That(obj["y", 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 6.0 }));
+            Assert.NotNull(obj);
+            Assert.Equal("Point", obj.ClassName);
+            Assert.Equal(new[] { "x", "y" }, obj.FieldNames);
+            Assert.Equal(new[] { 3.0 }, obj["x", 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { 5.0 }, obj["y", 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { -2.0 }, obj["x", 1].ConvertToDoubleArray());
+            Assert.Equal(new[] { 6.0 }, obj["y", 1].ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test reading another object.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestObject2()
         {
             var matFile = GetTests("good")["object2"];
             var obj = matFile["object2"].Value as IMatObject;
-            Assert.IsNotNull(obj);
-            Assert.That(obj.ClassName, Is.EqualTo("Point"));
-            Assert.That(obj.FieldNames, Is.EquivalentTo(new[] { "x", "y" }));
-            Assert.That(obj["x", 0, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 3.0 }));
-            Assert.That(obj["y", 0, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 5.0 }));
-            Assert.That(obj["x", 1, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0 }));
-            Assert.That(obj["y", 1, 0].ConvertToDoubleArray(), Is.EqualTo(new[] { 0.0 }));
-            Assert.That(obj["x", 0, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
-            Assert.That(obj["y", 0, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 6.0 }));
-            Assert.That(obj["x", 1, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 0.0 }));
-            Assert.That(obj["y", 1, 1].ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0 }));
-            Assert.That(obj[0, 1]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
-            Assert.That(obj[2]["x"].ConvertToDoubleArray(), Is.EqualTo(new[] { -2.0 }));
+            Assert.NotNull(obj);
+            Assert.Equal("Point", obj.ClassName);
+            Assert.Equal(new[] { "x", "y" }, obj.FieldNames);
+            Assert.Equal(new[] { 3.0 }, obj["x", 0, 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { -2.0 }, obj["x", 0, 1].ConvertToDoubleArray());
+            Assert.Equal(new[] { 1.0 }, obj["x", 1, 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { 0.0 }, obj["x", 1, 1].ConvertToDoubleArray());
+            Assert.Equal(new[] { 5.0 }, obj["y", 0, 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { 6.0 }, obj["y", 0, 1].ConvertToDoubleArray());
+            Assert.Equal(new[] { 0.0 }, obj["y", 1, 0].ConvertToDoubleArray());
+            Assert.Equal(new[] { 1.0 }, obj["y", 1, 1].ConvertToDoubleArray());
+            Assert.Equal(new[] { -2.0 }, obj[0, 1]["x"].ConvertToDoubleArray());
+            Assert.Equal(new[] { -2.0 }, obj[2]["x"].ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test reading a table.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestTable()
         {
             var matFile = GetTests("good")["table"];
             var obj = matFile["table_"].Value as IMatObject;
             var table = new TableAdapter(obj);
-            Assert.That(table.NumberOfRows, Is.EqualTo(3));
-            Assert.That(table.NumberOfVariables, Is.EqualTo(2));
-            Assert.That(table.Description, Is.EqualTo("Some table"));
-            Assert.That(table.VariableNames, Is.EqualTo(new[] { "variable1", "variable2" }));
+            Assert.Equal(3, table.NumberOfRows);
+            Assert.Equal(2, table.NumberOfVariables);
+            Assert.Equal("Some table", table.Description);
+            Assert.Equal(new[] { "variable1", "variable2" }, table.VariableNames);
             var variable1 = table["variable1"] as ICellArray;
-            Assert.That((variable1[0] as ICharArray).String, Is.EqualTo("First row"));
-            Assert.That((variable1[1] as ICharArray).String, Is.EqualTo("Second row"));
-            Assert.That((variable1[2] as ICharArray).String, Is.EqualTo("Third row"));
+            Assert.Equal("First row", (variable1[0] as ICharArray).String);
+            Assert.Equal("Second row", (variable1[1] as ICharArray).String);
+            Assert.Equal("Third row", (variable1[2] as ICharArray).String);
             var variable2 = table["variable2"];
-            Assert.That(variable2.ConvertToDoubleArray(), Is.EqualTo(new[] { 1.0, 3.0, 5.0, 2.0, 4.0, 6.0 }));
+            Assert.Equal(new[] { 1.0, 3.0, 5.0, 2.0, 4.0, 6.0 }, variable2.ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test subobjects within objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSubobjects()
         {
             var matFile = GetTests("good")["pointWithSubpoints"];
             var p = matFile["p"].Value as IMatObject;
-            Assert.That(p.ClassName, Is.EqualTo("Point"));
+            Assert.Equal("Point", p.ClassName);
             var x = p["x"] as IMatObject;
-            Assert.That(x.ClassName, Is.EqualTo("SubPoint"));
-            Assert.That(x.FieldNames, Is.EquivalentTo(new[] { "a", "b", "c" }));
+            Assert.Equal("SubPoint", x.ClassName);
+            Assert.Equal(new[] { "a", "b", "c" }, x.FieldNames);
             var y = p["y"] as IMatObject;
-            Assert.That(y.ClassName, Is.EqualTo("SubPoint"));
-            Assert.That(y.FieldNames, Is.EquivalentTo(new[] { "a", "b", "c" }));
-            Assert.That(x["a"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 1.0 }));
-            Assert.That(x["b"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 2.0 }));
-            Assert.That(x["c"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 3.0 }));
-            Assert.That(y["a"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 14.0 }));
-            Assert.That(y["b"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 15.0 }));
-            Assert.That(y["c"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 16.0 }));
+            Assert.Equal("SubPoint", y.ClassName);
+            Assert.Equal(new[] { "a", "b", "c" }, y.FieldNames);
+            Assert.Equal(new[] { 1.0 }, x["a"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 2.0 }, x["b"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 3.0 }, x["c"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 14.0 }, y["a"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 15.0 }, y["b"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 16.0 }, y["c"].ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test nested objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestNestedObjects()
         {
             var matFile = GetTests("good")["subsubPoint"];
             var p = matFile["p"].Value as IMatObject;
-            Assert.That(p.ClassName, Is.EqualTo("Point"));
-            Assert.That(p["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 1.0 }));
+            Assert.Equal("Point", p.ClassName);
+            Assert.Equal(new[] { 1.0 }, p["x"].ConvertToDoubleArray());
             var pp = p["y"] as IMatObject;
-            Assert.That(pp.ClassName == "Point");
-            Assert.That(pp["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 10.0 }));
+            Assert.True(pp.ClassName == "Point");
+            Assert.Equal(new[] { 10.0 }, pp["x"].ConvertToDoubleArray());
             var ppp = pp["y"] as IMatObject;
-            Assert.That(ppp["x"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 100.0 }));
-            Assert.That(ppp["y"].ConvertToDoubleArray(), Is.EquivalentTo(new[] { 200.0 }));
+            Assert.Equal(new[] { 100.0 }, ppp["x"].ConvertToDoubleArray());
+            Assert.Equal(new[] { 200.0 }, ppp["y"].ConvertToDoubleArray());
         }
 
         /// <summary>
         /// Test datetime objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestDatetime()
         {
             var matFile = GetTests("good")["datetime"];
             var d = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(d);
-            Assert.That(datetime.Dimensions, Is.EquivalentTo(new[] { 1, 2 }));
-            Assert.That(datetime[0], Is.EqualTo(new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-            Assert.That(datetime[1], Is.EqualTo(new DateTimeOffset(1987, 1, 2, 3, 4, 5, TimeSpan.Zero)));
+            Assert.Equal(new[] { 1, 2 }, datetime.Dimensions);
+            Assert.Equal(new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), datetime[0]);
+            Assert.Equal(new DateTimeOffset(1987, 1, 2, 3, 4, 5, TimeSpan.Zero), datetime[1]);
         }
 
         /// <summary>
         /// Another test for datetime objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestDatetime2()
         {
             var matFile = GetTests("good")["datetime2"];
             var d = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(d);
-            Assert.That(datetime.Dimensions, Is.EquivalentTo(new[] { 1, 1 }));
+            Assert.Equal(new[] { 1, 1 }, datetime.Dimensions);
             var diff = new DateTimeOffset(2, 1, 1, 1, 1, 1, 235, TimeSpan.Zero);
-            Assert.That(datetime[0] - diff < TimeSpan.FromMilliseconds(1));
-            Assert.That(diff - datetime[0] < TimeSpan.FromMilliseconds(1));
+            Assert.True(datetime[0] - diff < TimeSpan.FromMilliseconds(1));
+            Assert.True(diff - datetime[0] < TimeSpan.FromMilliseconds(1));
         }
 
         /// <summary>
         /// Test string objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestString()
         {
             var matFile = GetTests("good")["string"];
             var s = matFile["s"].Value as IMatObject;
             var str = new StringAdapter(s);
-            Assert.That(str.Dimensions, Is.EquivalentTo(new[] { 4, 1 }));
-            Assert.That(str[0], Is.EqualTo("abc"));
-            Assert.That(str[1], Is.EqualTo("defgh"));
-            Assert.That(str[2], Is.EqualTo("абвгд"));
-            Assert.That(str[3], Is.EqualTo("æøå"));
+            Assert.Equal(new[] { 4, 1 }, str.Dimensions);
+            Assert.Equal("abc", str[0]);
+            Assert.Equal("defgh", str[1]);
+            Assert.Equal("абвгд", str[2]);
+            Assert.Equal("æøå", str[3]);
         }
 
         /// <summary>
         /// Test duration objects.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestDuration()
         {
             var matFile = GetTests("good")["duration"];
             var d = matFile["d"].Value as IMatObject;
             var duration = new DurationAdapter(d);
-            Assert.That(duration.Dimensions, Is.EquivalentTo(new[] { 1, 3 }));
-            Assert.That(duration[0], Is.EqualTo(TimeSpan.FromTicks(12345678L)));
-            Assert.That(duration[1], Is.EqualTo(new TimeSpan(0, 2, 4)));
-            Assert.That(duration[2], Is.EqualTo(new TimeSpan(1, 3, 5)));
+            Assert.Equal(new[] { 1, 3 }, duration.Dimensions);
+            Assert.Equal(TimeSpan.FromTicks(12345678L), duration[0]);
+            Assert.Equal(new TimeSpan(0, 2, 4), duration[1]);
+            Assert.Equal(new TimeSpan(1, 3, 5), duration[2]);
         }
 
         /// <summary>
         /// Test unrepresentable datetime.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestDatetime_Unrepresentable()
         {
             var matFile = GetTests("good")["datetime-unrepresentable"];
             var obj = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(obj);
             var d0 = datetime[0];
-            Assert.That(d0, Is.Null);
+            Assert.Null(d0);
         }
 
-        [Test]
+        [Fact]
         public void Test_3DArrays()
         {
             var matFile = GetTests("good")["issue20.mat"];
             var obj = matFile["a3d"].Value;
             var values = obj.ConvertToDoubleArray();
-            Assert.That(values, Is.EqualTo(Enumerable.Range(1, 24)));
+            Assert.Equal(Enumerable.Range(1, 24).Select(x => (double)x).ToArray(), values);
             var expected = new double[3, 4, 2]
             {
                 {
@@ -512,17 +515,17 @@ namespace MatFileHandler.Tests
                     { 12, 24 },
                 },
             };
-            Assert.That(obj.ConvertToMultidimensionalDoubleArray(), Is.EqualTo(expected));
-            Assert.That(obj.ConvertTo2dDoubleArray(), Is.EqualTo(null));
+            Assert.Equal(expected, obj.ConvertToMultidimensionalDoubleArray());
+            Assert.Null(obj.ConvertTo2dDoubleArray());
         }
 
-        [Test]
+        [Fact]
         public void Test_4DArrays()
         {
             var matFile = GetTests("good")["issue20.mat"];
             var obj = matFile["a4d"].Value;
-            Assert.That(obj.ConvertToDoubleArray(), Is.EqualTo(Enumerable.Range(1, 120)));
-            Assert.That(obj.ConvertTo2dDoubleArray(), Is.EqualTo(null));
+            Assert.Equal(Enumerable.Range(1, 120).Select(x => (double)x).ToArray(), obj.ConvertToDoubleArray());
+            Assert.Null(obj.ConvertTo2dDoubleArray());
         }
 
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
@@ -531,18 +534,18 @@ namespace MatFileHandler.Tests
         private static void CheckLimits<T>(IArrayOf<T> array, T[] limits)
             where T : struct
         {
-            Assert.That(array, Is.Not.Null);
-            Assert.That(array.Dimensions, Is.EqualTo(new[] { 1, 2 }));
-            Assert.That(array.Data, Is.EqualTo(limits));
+            Assert.NotNull(array);
+            Assert.Equal(new[] { 1, 2 }, array.Dimensions);
+            Assert.Equal(limits, array.Data);
         }
 
         private static void CheckComplexLimits<T>(IArrayOf<ComplexOf<T>> array, T[] limits)
             where T : struct
         {
-            Assert.That(array, Is.Not.Null);
-            Assert.That(array.Dimensions, Is.EqualTo(new[] { 1, 2 }));
-            Assert.That(array[0], Is.EqualTo(new ComplexOf<T>(limits[0], limits[1])));
-            Assert.That(array[1], Is.EqualTo(new ComplexOf<T>(limits[1], limits[0])));
+            Assert.NotNull(array);
+            Assert.Equal(new[] { 1, 2 }, array.Dimensions);
+            Assert.Equal(new ComplexOf<T>(limits[0], limits[1]), array[0]);
+            Assert.Equal(new ComplexOf<T>(limits[1], limits[0]), array[1]);
         }
     }
 }
