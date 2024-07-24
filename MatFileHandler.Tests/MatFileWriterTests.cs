@@ -3,14 +3,13 @@
 using System;
 using System.IO;
 using System.Numerics;
-using NUnit.Framework;
+using Xunit;
 
 namespace MatFileHandler.Tests
 {
     /// <summary>
     /// Tests of file writing API.
     /// </summary>
-    [TestFixture]
     public class MatFileWriterTests
     {
         private const string TestDirectory = "test-data";
@@ -18,7 +17,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a simple Double array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestWrite()
         {
             var builder = new DataBuilder();
@@ -33,7 +32,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a large file.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestHuge()
         {
             var builder = new DataBuilder();
@@ -52,7 +51,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing lower and upper limits of integer data types.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestLimits()
         {
             var builder = new DataBuilder();
@@ -71,7 +70,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing lower and upper limits of integer-based complex data types.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestLimitsComplex()
         {
             var builder = new DataBuilder();
@@ -110,7 +109,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a wide-Unicode symbol.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestUnicodeWide()
         {
             var builder = new DataBuilder();
@@ -122,7 +121,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a sparse array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSparseArray()
         {
             var builder = new DataBuilder();
@@ -139,7 +138,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a structure array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestStructure()
         {
             var builder = new DataBuilder();
@@ -167,7 +166,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a logical array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestLogical()
         {
             var builder = new DataBuilder();
@@ -180,7 +179,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a sparse logical array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSparseLogical()
         {
             var builder = new DataBuilder();
@@ -197,7 +196,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a sparse complex array.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestSparseComplex()
         {
             var builder = new DataBuilder();
@@ -213,7 +212,7 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a global variable.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestGlobal()
         {
             var builder = new DataBuilder();
@@ -229,16 +228,16 @@ namespace MatFileHandler.Tests
         private void CompareSparseArrays<T>(ISparseArrayOf<T> expected, ISparseArrayOf<T> actual)
           where T : struct
         {
-            Assert.That(actual, Is.Not.Null);
-            Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
-            Assert.That(expected.Data, Is.EquivalentTo(actual.Data));
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Dimensions, actual.Dimensions);
+            Assert.Equal(expected.Data, actual.Data);
         }
 
         private void CompareStructureArrays(IStructureArray expected, IStructureArray actual)
         {
-            Assert.That(actual, Is.Not.Null);
-            Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
-            Assert.That(expected.FieldNames, Is.EquivalentTo(actual.FieldNames));
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Dimensions, actual.Dimensions);
+            Assert.Equal(expected.FieldNames, actual.FieldNames);
             foreach (var name in expected.FieldNames)
             {
                 for (var i = 0; i < expected.Count; i++)
@@ -250,8 +249,8 @@ namespace MatFileHandler.Tests
 
         private void CompareCellArrays(ICellArray expected, ICellArray actual)
         {
-            Assert.That(actual, Is.Not.Null);
-            Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Dimensions, actual.Dimensions);
             for (var i = 0; i < expected.Count; i++)
             {
                 CompareMatArrays(expected[i], actual[i]);
@@ -260,16 +259,16 @@ namespace MatFileHandler.Tests
 
         private void CompareNumericalArrays<T>(IArrayOf<T> expected, IArrayOf<T> actual)
         {
-            Assert.That(actual, Is.Not.Null);
-            Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
-            Assert.That(expected.Data, Is.EqualTo(actual.Data));
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Dimensions, actual.Dimensions);
+            Assert.Equal(expected.Data, actual.Data);
         }
 
         private void CompareCharArrays(ICharArray expected, ICharArray actual)
         {
-            Assert.That(actual, Is.Not.Null);
-            Assert.That(expected.Dimensions, Is.EqualTo(actual.Dimensions));
-            Assert.That(expected.String, Is.EqualTo(actual.String));
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Dimensions, actual.Dimensions);
+            Assert.Equal(expected.String, actual.String);
         }
 
         private void CompareMatArrays(IArray expected, IArray actual)
@@ -357,7 +356,7 @@ namespace MatFileHandler.Tests
             }
             if (expected.IsEmpty)
             {
-                Assert.That(actual.IsEmpty, Is.True);
+                Assert.True(actual.IsEmpty);
                 return;
             }
             throw new NotSupportedException();
@@ -365,13 +364,13 @@ namespace MatFileHandler.Tests
 
         private void CompareMatFiles(IMatFile expected, IMatFile actual)
         {
-            Assert.That(expected.Variables.Length, Is.EqualTo(actual.Variables.Length));
+            Assert.Equal(expected.Variables.Length, actual.Variables.Length);
             for (var i = 0; i < expected.Variables.Length; i++)
             {
                 var expectedVariable = expected.Variables[i];
                 var actualVariable = actual.Variables[i];
-                Assert.That(expectedVariable.Name, Is.EqualTo(actualVariable.Name));
-                Assert.That(expectedVariable.IsGlobal, Is.EqualTo(actualVariable.IsGlobal));
+                Assert.Equal(expectedVariable.Name, actualVariable.Name);
+                Assert.Equal(expectedVariable.IsGlobal, actualVariable.IsGlobal);
                 CompareMatArrays(expectedVariable.Value, actualVariable.Value);
             }
         }

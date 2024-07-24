@@ -1,32 +1,28 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
+using System;
 using System.Collections.Generic;
 using System.Numerics;
-using NUnit.Framework;
+using Xunit;
 
 namespace MatFileHandler.Tests
 {
     /// <summary>
     /// Tests of Matlab array manipulation.
     /// </summary>
-    [TestFixture]
-    public class ArrayHandlingTests
+    public class ArrayHandlingTests : IDisposable
     {
-        private DataBuilder Builder { get; set; }
-
-        /// <summary>
-        /// Set up a DataBuilder.
-        /// </summary>
-        [SetUp]
-        public void Setup()
+        public ArrayHandlingTests()
         {
             Builder = new DataBuilder();
         }
 
+        private DataBuilder Builder { get; set; }
+
         /// <summary>
         /// Test numerical array creation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestCreate()
         {
             TestCreateArrayOf<sbyte>();
@@ -54,70 +50,74 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test numerical array manipulation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestNumArray()
         {
             var array = Builder.NewArray<int>(2, 3);
             array[0, 1] = 2;
-            Assert.That(array[0, 1], Is.EqualTo(2));
+            Assert.Equal(2, array[0, 1]);
         }
 
         /// <summary>
         /// Test cell array manipulation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestCellArray()
         {
             var array = Builder.NewCellArray(2, 3);
-            Assert.That(array.Dimensions, Is.EqualTo(new[] { 2, 3 }));
+            Assert.Equal(new[] { 2, 3 }, array.Dimensions);
             array[0, 1] = Builder.NewArray<int>(1, 2);
-            Assert.That(array[1, 2].IsEmpty, Is.True);
-            Assert.That(array[0, 1].IsEmpty, Is.False);
+            Assert.True(array[1, 2].IsEmpty);
+            Assert.False(array[0, 1].IsEmpty);
             var assigned = (IArrayOf<int>)array[0, 1];
-            Assert.That(assigned, Is.Not.Null);
-            Assert.That(assigned.Dimensions, Is.EqualTo(new[] { 1, 2 }));
+            Assert.NotNull(assigned);
+            Assert.Equal(new[] { 1, 2 }, assigned.Dimensions);
         }
 
         /// <summary>
         /// Test structure array manipulation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestStructureArray()
         {
             var array = Builder.NewStructureArray(new[] { "x", "y" }, 2, 3);
             array["x", 0, 1] = Builder.NewArray<int>(1, 2);
-            Assert.That(array["y", 0, 1].IsEmpty, Is.True);
-            Assert.That(array["x", 0, 1].IsEmpty, Is.False);
+            Assert.True(array["y", 0, 1].IsEmpty);
+            Assert.False(array["x", 0, 1].IsEmpty);
             var assigned = (IArrayOf<int>)array["x", 0, 1];
-            Assert.That(assigned, Is.Not.Null);
-            Assert.That(assigned.Dimensions, Is.EqualTo(new[] { 1, 2 }));
+            Assert.NotNull(assigned);
+            Assert.Equal(new[] { 1, 2 }, assigned.Dimensions);
         }
 
         /// <summary>
         /// Test character array manipulation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestString()
         {
             var array = Builder.NewCharArray("🍆");
-            Assert.That(array.Dimensions, Is.EqualTo(new[] { 1, 2 }));
+            Assert.Equal(new[] { 1, 2 }, array.Dimensions);
         }
 
         /// <summary>
         /// Test file creation.
         /// </summary>
-        [Test]
+        [Fact]
         public void TestFile()
         {
             var file = Builder.NewFile(new List<IVariable>());
-            Assert.That(file, Is.Not.Null);
+            Assert.NotNull(file);
         }
-
+            
         private static void TestCreateArrayOf<T>()
             where T : struct
         {
             var array = new DataBuilder().NewArray<T>(2, 3);
-            Assert.That(array, Is.Not.Null);
+            Assert.NotNull(array);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
