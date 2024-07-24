@@ -42,7 +42,7 @@ namespace MatFileHandler
             var embeddedObjectPositionsToValues = ReadEmbeddedObjectPositionsToValues(info, offsets, numberOfEmbeddedObjects);
             var numberOfObjects = ((offsets[5] - offsets[4]) / 24) - 1;
             var objectClasses = ReadObjectClassInformations(info, offsets, numberOfObjects);
-            var numberOfObjectPositions = objectClasses.Values.Count(x => x.ObjectPosition != 0);
+            var numberOfObjectPositions = objectClasses.NumberOfObjectPositions;
             var objectPositionsToValues = ReadObjectPositionsToValues(info, offsets, numberOfObjectPositions);
             var (classInformation, objectInformation) =
                 GatherClassAndObjectInformation(
@@ -68,7 +68,7 @@ namespace MatFileHandler
             return ReadObjectPositionsToValuesMapping(reader, numberOfObjectPositions);
         }
 
-        private static Dictionary<int, ObjectClassInformation> ReadObjectClassInformations(byte[] info, int[] offsets, int numberOfObjects)
+        private static ObjectClasses ReadObjectClassInformations(byte[] info, int[] offsets, int numberOfObjects)
         {
             using var stream = new MemoryStream(info, offsets[4], offsets[5] - offsets[4]);
             using var reader = new BinaryReader(stream);
@@ -102,7 +102,7 @@ namespace MatFileHandler
             GatherClassAndObjectInformation(
                 Dictionary<int, string> classIdToName,
                 string[] fieldNames,
-                Dictionary<int, ObjectClassInformation> objectClasses,
+                ObjectClasses objectClasses,
                 Dictionary<int, Dictionary<int, int>> objectPositionsToValues,
                 Dictionary<int, Dictionary<int, int>> embeddedObjectPositionsToValues)
         {
@@ -113,8 +113,8 @@ namespace MatFileHandler
                 var fieldIds = new SortedSet<int>();
                 foreach (var objectPosition in objectPositionsToValues.Keys)
                 {
-                    var keyValuePair = objectClasses.First(pair => pair.Value.ObjectPosition == objectPosition);
-                    if (keyValuePair.Value.ClassId != classId)
+                    var foundClassId = objectClasses.GetClassIdByObjectPosition(objectPosition);
+                    if (foundClassId != classId)
                     {
                         continue;
                     }
@@ -127,8 +127,8 @@ namespace MatFileHandler
 
                 foreach (var objectPosition in embeddedObjectPositionsToValues.Keys)
                 {
-                    var keyValuePair = objectClasses.First(pair => pair.Value.EmbeddedObjectPosition == objectPosition);
-                    if (keyValuePair.Value.ClassId != classId)
+                    var foundClassId = objectClasses.GetClassIdByEmbeddedObjectPosition(objectPosition);
+                    if (foundClassId != classId)
                     {
                         continue;
                     }
@@ -151,15 +151,14 @@ namespace MatFileHandler
             var objectInfos = new Dictionary<int, SubsystemData.ObjectInfo>();
             foreach (var objectPosition in objectPositionsToValues.Keys)
             {
-                var keyValuePair = objectClasses.First(pair => pair.Value.ObjectPosition == objectPosition);
-                objectInfos[keyValuePair.Key] = new SubsystemData.ObjectInfo(objectPositionsToValues[objectPosition]);
+                var foundKey = objectClasses.GetKeyByObjectPosition(objectPosition);
+                objectInfos[foundKey] = new SubsystemData.ObjectInfo(objectPositionsToValues[objectPosition]);
             }
 
-            foreach (var objectPosition in embeddedObjectPositionsToValues.Keys)
+            foreach (var embeddedObjectPosition in embeddedObjectPositionsToValues.Keys)
             {
-                var keyValuePair = objectClasses.First(pair => pair.Value.EmbeddedObjectPosition == objectPosition);
-                objectInfos[keyValuePair.Key] =
-                    new SubsystemData.ObjectInfo(embeddedObjectPositionsToValues[objectPosition]);
+                var foundKey = objectClasses.GetKeyByEmbeddedObjectPosition(embeddedObjectPosition);
+                objectInfos[foundKey] = new SubsystemData.ObjectInfo(embeddedObjectPositionsToValues[embeddedObjectPosition]);
             }
 
             return (classInfos, objectInfos);
@@ -241,24 +240,40 @@ namespace MatFileHandler
             return result;
         }
 
-        private static Dictionary<int, ObjectClassInformation> ReadObjectClasses(
+        private static ObjectClasses ReadObjectClasses(
             BinaryReader reader,
             int numberOfObjects)
         {
             var result = new Dictionary<int, ObjectClassInformation>();
+            var classIdFromObjectPosition = new Dictionary<int, int>();
+            var classIdFromEmbeddedObjectPosition = new Dictionary<int, int>();
+            var keyFromObjectPosition = new Dictionary<int, int>();
+            var keyFromEmbeddedObjectPosition = new Dictionary<int, int>();
             reader.ReadBytes(24);
+            var numberOfObjectPositions = 0;
             for (var i = 0; i < numberOfObjects; i++)
             {
                 var classId = reader.ReadInt32();
                 reader.ReadBytes(8);
                 var embeddedObjectPosition = reader.ReadInt32();
                 var objectPosition = reader.ReadInt32();
-                var loadingOrder = reader.ReadInt32();
-                result[i + 1] =
-                    new ObjectClassInformation(embeddedObjectPosition, objectPosition, loadingOrder, classId);
+                var loadingOrder = reader.ReadInt32(); // Not used.
+                classIdFromObjectPosition[objectPosition] = classId;
+                classIdFromEmbeddedObjectPosition[embeddedObjectPosition] = classId;
+                keyFromObjectPosition[objectPosition] = i + 1;
+                keyFromEmbeddedObjectPosition[embeddedObjectPosition] = i + 1;
+                if (objectPosition != 0)
+                {
+                    numberOfObjectPositions++;
+                }
             }
 
-            return result;
+            return new ObjectClasses(
+                classIdFromObjectPosition,
+                classIdFromEmbeddedObjectPosition,
+                keyFromObjectPosition,
+                keyFromEmbeddedObjectPosition,
+                numberOfObjectPositions);
         }
 
         private static Dictionary<int, Dictionary<int, int>> ReadObjectPositionsToValuesMapping(
@@ -343,6 +358,42 @@ namespace MatFileHandler
             public int LoadingOrder { get; }
 
             public int ObjectPosition { get; }
+        }
+
+        private class ObjectClasses
+        {
+            private readonly Dictionary<int, int> _classIdFromObjectPosition;
+            private readonly Dictionary<int, int> _classIdFromEmbeddedObjectPosition;
+            private readonly Dictionary<int, int> _keyFromObjectPosition;
+            private readonly Dictionary<int, int> _keyFromEmbeddedObjectPosition;
+
+            public ObjectClasses(
+                Dictionary<int, int> classIdFromObjectPosition,
+                Dictionary<int, int> classIdFromEmbeddedObjectPosition,
+                Dictionary<int, int> keyFromObjectPosition,
+                Dictionary<int, int> keyFromEmbeddedObjectPosition,
+                int numberOfObjectPositions)
+            {
+                _classIdFromObjectPosition = classIdFromObjectPosition;
+                _classIdFromEmbeddedObjectPosition = classIdFromEmbeddedObjectPosition;
+                _keyFromObjectPosition = keyFromObjectPosition;
+                _keyFromEmbeddedObjectPosition = keyFromEmbeddedObjectPosition;
+                NumberOfObjectPositions = numberOfObjectPositions;
+            }
+
+            public int NumberOfObjectPositions { get; }
+
+            public int GetClassIdByObjectPosition(int objectPosition)
+                => _classIdFromObjectPosition[objectPosition];
+
+            public int GetClassIdByEmbeddedObjectPosition(int embeddedObjectPosition)
+                => _classIdFromEmbeddedObjectPosition[embeddedObjectPosition];
+
+            public int GetKeyByObjectPosition(int objectPosition)
+                => _keyFromObjectPosition[objectPosition];
+
+            public int GetKeyByEmbeddedObjectPosition(int embeddedObjectPosition)
+                => _keyFromEmbeddedObjectPosition[embeddedObjectPosition];
         }
     }
 }
