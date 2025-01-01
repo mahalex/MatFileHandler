@@ -354,8 +354,7 @@ namespace MatFileHandler
         private DataElement ReadCompressed(Tag tag, BinaryReader reader)
         {
             reader.ReadBytes(2);
-            var compressedData = new byte[tag.Length - 6];
-            reader.BaseStream.Read(compressedData, 0, tag.Length - 6);
+            var compressedData = reader.ReadBytes(tag.Length - 6);
             reader.ReadBytes(4);
             var resultStream = new MemoryStream();
             using (var compressedStream = new MemoryStream(compressedData))
