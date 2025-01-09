@@ -529,7 +529,7 @@ namespace MatFileHandler.Tests
         }
 
         private static AbstractTestDataFactory<IMatFile> GetTests(string factoryName) =>
-            new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
+            new PartialReadMatTestDataFactory(Path.Combine(TestDirectory, factoryName));
 
         private static void CheckLimits<T>(IArrayOf<T> array, T[] limits)
             where T : struct
