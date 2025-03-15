@@ -29,15 +29,18 @@ namespace MatFileHandler
         /// </summary>
         /// <param name="classInformation">Information about the classes.</param>
         /// <param name="objectInformation">Information about the objects.</param>
+        /// <param name="fieldNames">Field names.</param>
         /// <param name="data">Field values.</param>
         public SubsystemData(
             Dictionary<int, ClassInfo> classInformation,
             Dictionary<int, ObjectInfo> objectInformation,
+            string[] fieldNames,
             Dictionary<int, IArray> data)
         {
             _realData = new RealSubsystemData(
                 classInformation,
                 objectInformation,
+                fieldNames,
                 data);
         }
 
@@ -60,6 +63,12 @@ namespace MatFileHandler
             _realData?.ObjectInformation ?? throw new HandlerException("Subsystem data missing.");
 
         /// <summary>
+        /// Gets field names.
+        /// </summary>
+        public string[] FieldNames =>
+            _realData?.FieldNames ?? throw new HandlerException("Subsystem data missing.");
+
+        /// <summary>
         /// Initialize this object from another object.
         /// This ugly hack allows us to read the opaque objects and store references to
         /// the subsystem data in them before parsing the actual subsystem data (which
@@ -71,6 +80,7 @@ namespace MatFileHandler
             _realData = new RealSubsystemData(
                 data.ClassInformation,
                 data.ObjectInformation,
+                data.FieldNames,
                 data.Data);
         }
 
@@ -147,14 +157,17 @@ namespace MatFileHandler
             /// </summary>
             /// <param name="classInformation">Class information.</param>
             /// <param name="objectInformation">Object information.</param>
+            /// <param name="fieldNames">Field names.</param>
             /// <param name="data">Data.</param>
             public RealSubsystemData(
                 Dictionary<int, ClassInfo> classInformation,
                 Dictionary<int, ObjectInfo> objectInformation,
+                string[] fieldNames,
                 IReadOnlyDictionary<int, IArray> data)
             {
                 ClassInformation = classInformation ?? throw new ArgumentNullException(nameof(classInformation));
                 ObjectInformation = objectInformation ?? throw new ArgumentNullException(nameof(objectInformation));
+                FieldNames = fieldNames;
                 Data = data ?? throw new ArgumentNullException(nameof(data));
             }
 
@@ -172,6 +185,11 @@ namespace MatFileHandler
             /// Gets information about all the objects occurring in the file.
             /// </summary>
             public Dictionary<int, ObjectInfo> ObjectInformation { get; }
+
+            /// <summary>
+            /// Gets field names.
+            /// </summary>
+            public string[] FieldNames { get; }
         }
     }
 }

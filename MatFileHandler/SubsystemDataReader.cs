@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -58,7 +59,7 @@ namespace MatFileHandler
                 data[i] = TransformOpaqueData(opaqueData[i + 2], subsystemData);
             }
 
-            return new SubsystemData(classInformation, objectInformation, data);
+            return new SubsystemData(classInformation, objectInformation, fieldNames, data);
         }
 
         private static Dictionary<int, Dictionary<int, int>> ReadObjectPositionsToValues(byte[] info, int[] offsets, int numberOfObjectPositions)
@@ -303,20 +304,15 @@ namespace MatFileHandler
             {
                 var next = BitConverter.ToInt32(bytes, position);
                 position += 4;
-                if (next == 0)
+                if (next == bytes.Length)
                 {
-                    if (position % 8 != 0)
-                    {
-                        position += 4;
-                    }
-
                     break;
                 }
 
                 offsets.Add(next);
             }
 
-            return (offsets.ToArray(), position);
+            return (offsets.ToArray(), 40);
         }
 
         private static IArray TransformOpaqueData(IArray array, SubsystemData subsystemData)
