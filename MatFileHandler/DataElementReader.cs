@@ -258,7 +258,7 @@ namespace MatFileHandler
             }
             else
             {
-                return new Opaque(name, typeDescription, className, new int[] { }, data);
+                return new Opaque(name, typeDescription, className, new int[] { }, data, subsystemData);
             }
         }
 

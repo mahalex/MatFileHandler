@@ -12,8 +12,6 @@ namespace MatFileHandler
     /// </summary>
     internal class OpaqueLink : Opaque, IMatObject
     {
-        private readonly SubsystemData subsystemData;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OpaqueLink"/> class.
         /// </summary>
@@ -34,11 +32,10 @@ namespace MatFileHandler
             int[] indexToObjectId,
             int classIndex,
             SubsystemData subsystemData)
-            : base(name, typeDescription, className, dimensions, data)
+            : base(name, typeDescription, className, dimensions, data, subsystemData)
         {
             IndexToObjectId = indexToObjectId ?? throw new ArgumentNullException(nameof(indexToObjectId));
             ClassIndex = classIndex;
-            this.subsystemData = subsystemData ?? throw new ArgumentNullException(nameof(subsystemData));
         }
 
         /// <summary>
@@ -74,9 +71,9 @@ namespace MatFileHandler
         /// <summary>
         /// Gets name of this object's class.
         /// </summary>
-        public override string ClassName => subsystemData.ClassInformation[ClassIndex].Name;
+        public override string ClassName => SubsystemData.ClassInformation[ClassIndex].Name;
 
-        private string[] FieldNamesArray => subsystemData.ClassInformation[ClassIndex].FieldNames.ToArray();
+        private string[] FieldNamesArray => SubsystemData.ClassInformation[ClassIndex].FieldNames.ToArray();
 
         /// <inheritdoc />
         public IArray this[string field, params int[] list]
@@ -108,7 +105,7 @@ namespace MatFileHandler
         private bool TryGetValue(string field, out IArray? output, params int[] list)
         {
             var index = Dimensions.DimFlatten(list);
-            var maybeFieldIndex = subsystemData.ClassInformation[ClassIndex].FindField(field);
+            var maybeFieldIndex = SubsystemData.ClassInformation[ClassIndex].FindField(field);
             if (!(maybeFieldIndex is int fieldIndex))
             {
                 output = default;
@@ -122,9 +119,9 @@ namespace MatFileHandler
             }
 
             var objectId = IndexToObjectId[index];
-            var objectInfo = subsystemData.ObjectInformation[objectId];
+            var objectInfo = SubsystemData.ObjectInformation[objectId];
             var fieldId = objectInfo.FieldLinks[fieldIndex];
-            output = subsystemData.Data[fieldId];
+            output = SubsystemData.Data[fieldId];
             return true;
         }
 

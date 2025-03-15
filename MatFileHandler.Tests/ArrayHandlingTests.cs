@@ -10,8 +10,11 @@ namespace MatFileHandler.Tests
     /// <summary>
     /// Tests of Matlab array manipulation.
     /// </summary>
-    public class ArrayHandlingTests : IDisposable
+    public sealed class ArrayHandlingTests : IDisposable
     {
+        /// <summary>
+        /// Setup for array handling tests.
+        /// </summary>
         public ArrayHandlingTests()
         {
             Builder = new DataBuilder();
@@ -108,7 +111,7 @@ namespace MatFileHandler.Tests
             var file = Builder.NewFile(new List<IVariable>());
             Assert.NotNull(file);
         }
-            
+
         private static void TestCreateArrayOf<T>()
             where T : struct
         {
@@ -116,8 +119,12 @@ namespace MatFileHandler.Tests
             Assert.NotNull(array);
         }
 
+        /// <summary>
+        /// Cleanup.
+        /// </summary>
         public void Dispose()
         {
+
         }
     }
 }

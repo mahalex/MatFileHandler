@@ -26,12 +26,14 @@ namespace MatFileHandler
         /// <param name="className">Class name.</param>
         /// <param name="dimensions">Dimensions of the object.</param>
         /// <param name="rawData">Raw object's data.</param>
-        public Opaque(string name, string typeDescription, string className, int[] dimensions, DataElement rawData)
+        /// <param name="subsystemData">Subsystem data.</param>
+        public Opaque(string name, string typeDescription, string className, int[] dimensions, DataElement rawData, SubsystemData subsystemData)
             : base(new ArrayFlags(ArrayType.MxOpaque, 0), dimensions, name)
         {
             TypeDescription = typeDescription ?? throw new ArgumentNullException(nameof(typeDescription));
             ClassName = className ?? throw new ArgumentNullException(nameof(className));
             RawData = rawData ?? throw new ArgumentNullException(nameof(rawData));
+            SubsystemData = subsystemData ?? throw new ArgumentNullException(nameof(subsystemData));
         }
 
         /// <summary>
@@ -48,6 +50,11 @@ namespace MatFileHandler
         /// Gets "type description" of the opaque object.
         /// </summary>
         public string TypeDescription { get; }
+
+        /// <summary>
+        /// Gets subsystem data.
+        /// </summary>
+        public SubsystemData SubsystemData { get; }
 
         /// <inheritdoc />
         public override Complex[]? ConvertToComplexArray() => null;

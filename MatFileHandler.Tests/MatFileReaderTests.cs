@@ -165,6 +165,23 @@ namespace MatFileHandler.Tests
         }
 
         /// <summary>
+        /// Test reading an enumeration.
+        /// </summary>
+        [Fact]
+        public void TestEnum()
+        {
+            var matFile = GetTests("good")["enum"];
+            var days = matFile["days"].Value;
+            var enumeration = new EnumAdapter(days);
+            Assert.Equal(5, enumeration.Values.Count);
+            Assert.Equal("Wednesday", enumeration.ValueNames[enumeration.Values[0]]);
+            Assert.Equal("Saturday", enumeration.ValueNames[enumeration.Values[1]]);
+            Assert.Equal("Monday", enumeration.ValueNames[enumeration.Values[2]]);
+            Assert.Equal("Wednesday", enumeration.ValueNames[enumeration.Values[3]]);
+            Assert.Equal("Saturday", enumeration.ValueNames[enumeration.Values[4]]);
+        }
+
+        /// <summary>
         /// Test reading a structure array.
         /// </summary>
         [Fact]
@@ -487,6 +504,9 @@ namespace MatFileHandler.Tests
             Assert.Null(d0);
         }
 
+        /// <summary>
+        /// Test 3-dimensional arrays.
+        /// </summary>
         [Fact]
         public void Test_3DArrays()
         {
@@ -518,7 +538,10 @@ namespace MatFileHandler.Tests
             Assert.Equal(expected, obj.ConvertToMultidimensionalDoubleArray());
             Assert.Null(obj.ConvertTo2dDoubleArray());
         }
-
+        
+        /// <summary>
+        /// Test four-dimensional arrays.
+        /// </summary>
         [Fact]
         public void Test_4DArrays()
         {
