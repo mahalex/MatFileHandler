@@ -67,29 +67,6 @@ namespace MatFileHandler
             }
         }
 
-        private static uint CalculateAdler32Checksum(Stream stream)
-        {
-            uint s1 = 1;
-            uint s2 = 0;
-            const uint bigPrime = 0xFFF1;
-            const int bufferSize = 2048;
-            var buffer = new byte[bufferSize];
-            while (true)
-            {
-                var bytesRead = stream.Read(buffer, 0, bufferSize);
-                for (var i = 0; i < bytesRead; i++)
-                {
-                    s1 = (s1 + buffer[i]) % bigPrime;
-                    s2 = (s2 + s1) % bigPrime;
-                }
-                if (bytesRead < bufferSize)
-                {
-                    break;
-                }
-            }
-            return (s2 << 16) | s1;
-        }
-
         private void WriteHeader(BinaryWriter writer, Header header)
         {
             writer.Write(Encoding.UTF8.GetBytes(header.Text));
@@ -637,31 +614,28 @@ namespace MatFileHandler
 
         private void WriteCompressedVariable(BinaryWriter writer, IVariable variable)
         {
-            using (var compressedStream = new MemoryStream())
+            var position = writer.BaseStream.Position;
+            WriteTag(writer, new Tag(DataType.MiCompressed, 0));
+            writer.Write((byte)0x78);
+            writer.Write((byte)0x9c);
+            int compressedLength;
+            uint crc;
+            var before = writer.BaseStream.Position;
+            using (var compressionStream = new DeflateStream(writer.BaseStream, CompressionMode.Compress, leaveOpen: true))
             {
-                uint crc;
-                using (var originalStream = new MemoryStream())
-                {
-                    using (var internalWriter = new BinaryWriter(originalStream))
-                    {
-                        WriteVariable(internalWriter, variable);
-                        originalStream.Position = 0;
-                        crc = CalculateAdler32Checksum(originalStream);
-                        originalStream.Position = 0;
-                        using (var compressionStream =
-                            new DeflateStream(compressedStream, CompressionMode.Compress, leaveOpen: true))
-                        {
-                            originalStream.CopyTo(compressionStream);
-                        }
-                    }
-                }
-                compressedStream.Position = 0;
-                WriteTag(writer, new Tag(DataType.MiCompressed, (int)(compressedStream.Length + 6)));
-                writer.Write((byte)0x78);
-                writer.Write((byte)0x9c);
-                compressedStream.CopyTo(writer.BaseStream);
-                writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
+                using var checksumStream = new ChecksumCalculatingStream(compressionStream);
+                using var internalWriter = new BinaryWriter(checksumStream, Encoding.UTF8, leaveOpen: true);
+                WriteVariable(internalWriter, variable);
+                crc = checksumStream.GetCrc();
             }
+
+            var after = writer.BaseStream.Position;
+            compressedLength = (int)(after - before) + 6;
+
+            writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
+            writer.BaseStream.Position = position;
+            WriteTag(writer, new Tag(DataType.MiCompressed, compressedLength));
+            writer.BaseStream.Seek(0, SeekOrigin.End);
         }
     }
 }
