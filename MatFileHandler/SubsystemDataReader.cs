@@ -334,6 +334,16 @@ namespace MatFileHandler
                 }
             }
 
+            if (array is MatCellArray cellArray)
+            {
+                for (var i = 0; i < cellArray.Data.Length; i++)
+                {
+                    var cell = cellArray.Data[i];
+                    var transformedCell = TransformOpaqueData(cell, subsystemData);
+                    cellArray.Data[i] = transformedCell;
+                }
+            }
+
             return array;
         }
 
