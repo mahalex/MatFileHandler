@@ -391,6 +391,31 @@ namespace MatFileHandler.Tests
         }
 
         /// <summary>
+        /// Test reading a table with strings
+        /// </summary>
+        [Fact]
+        public void TestTableWithStrings()
+        {
+            var matFile = GetTests("good")["table-with-strings"];
+            var obj = matFile["t"].Value as IMatObject;
+            var table = new TableAdapter(obj);
+            Assert.Equal(5, table.NumberOfRows);
+            Assert.Equal(2, table.NumberOfVariables);
+            Assert.Equal(new[] { "Numbers", "Names" }, table.VariableNames);
+            var variable = table["Names"] as ICellArray;
+            var name0 = new StringAdapter(variable[0]);
+            Assert.Equal("One", name0[0]);
+            var name1 = new StringAdapter(variable[1]);
+            Assert.Equal("Two", name1[0]);
+            var name2 = new StringAdapter(variable[2]);
+            Assert.Equal("Three", name2[0]);
+            var name3 = new StringAdapter(variable[3]);
+            Assert.Equal("Four", name3[0]);
+            var name4 = new StringAdapter(variable[4]);
+            Assert.Equal("Five", name4[0]);
+        }
+
+        /// <summary>
         /// Test subobjects within objects.
         /// </summary>
         [Fact]
