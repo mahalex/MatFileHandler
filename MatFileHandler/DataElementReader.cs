@@ -343,30 +343,33 @@ namespace MatFileHandler
             return new MatStructureArray(flags, dimensions, name, fields);
         }
 
-        private DataElement Read(Stream stream)
-        {
-            using (var reader = new BinaryReader(stream))
-            {
-                return Read(reader);
-            }
-        }
-
         private DataElement ReadCompressed(Tag tag, BinaryReader reader)
         {
             reader.ReadBytes(2);
-            var compressedData = reader.ReadBytes(tag.Length - 6);
-            reader.ReadBytes(4);
-            var resultStream = new MemoryStream();
-            using (var compressedStream = new MemoryStream(compressedData))
+
+            DataElement element;
+
+            using (var substream = new Substream(reader.BaseStream, tag.Length - 6))
             {
-                using (var stream = new DeflateStream(compressedStream, CompressionMode.Decompress, leaveOpen: true))
+                using (var deflateStream = new DeflateStream(substream, CompressionMode.Decompress))
+                using (var bufferedStream = new BufferedStream(deflateStream))
+                using (var positionTrackingStream = new PositionTrackingStream(bufferedStream))
+                using (var innerReader = new BinaryReader(positionTrackingStream))
                 {
-                    stream.CopyTo(resultStream);
+                    element = Read(innerReader);
+                }
+
+                if (substream.Position != substream.Length)
+                {
+                    // In the pathological case that the deflate stream did not read the full
+                    // length, then read out the rest manually (normally 1 byte).
+                    reader.ReadBytes((int)(substream.Length - substream.Position));
                 }
             }
 
-            resultStream.Position = 0;
-            return Read(resultStream);
+            reader.ReadBytes(4);
+
+            return element;
         }
 
         private DataElement ReadMatrix(Tag tag, BinaryReader reader)

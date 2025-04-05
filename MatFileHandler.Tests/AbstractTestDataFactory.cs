@@ -59,7 +59,7 @@ namespace MatFileHandler.Tests
 
         private TTestData ReadTestData(string filename)
         {
-            using (var stream = new FileStream(filename, FileMode.Open))
+            using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
                 return ReadDataFromStream(stream);
             }
