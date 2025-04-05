@@ -6,29 +6,31 @@ namespace MatFileHandler.Tests
 {
     /// <summary>
     /// Factory providing the parsed contents of .mat files,
-    /// wrapped in a <see cref="PartialUnseekableReadStream"/>.
+    /// which start at a non-8 byte-aligned offset in the stream.
     /// </summary>
-    public class PartialReadMatTestDataFactory : MatTestDataFactory
+    public class UnalignedMatTestDataFactory : MatTestDataFactory
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PartialReadMatTestDataFactory"/> class.
         /// </summary>
         /// <param name="testDirectory">Directory containing test files.</param>
-        public PartialReadMatTestDataFactory(string testDirectory)
+        public UnalignedMatTestDataFactory(string testDirectory)
             : base(testDirectory)
         {
         }
 
-        /// <summary>
-        /// Read and parse data from a .mat file.
-        /// </summary>
-        /// <param name="stream">Input stream.</param>
-        /// <returns>Parsed contents of the file.</returns>
+        /// <inheritdoc/>
         protected override IMatFile ReadDataFromStream(Stream stream)
         {
-            using (var wrapper = new PartialUnseekableReadStream(stream))
+            using (var ms =  new MemoryStream())
             {
-                return base.ReadDataFromStream(wrapper);
+                ms.Seek(3, SeekOrigin.Begin);
+
+                stream.CopyTo(ms);
+
+                ms.Seek(3, SeekOrigin.Begin);
+
+                return base.ReadDataFromStream(ms);
             }
         }
     }
