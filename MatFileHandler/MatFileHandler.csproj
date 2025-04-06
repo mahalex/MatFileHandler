@@ -7,9 +7,10 @@
     <Authors>Alexander Luzgarev</Authors>
     <Description>MatFileHandler provides a simple interface for reading and writing MATLAB .mat files (of so-called "Level 5") and extracting the contents of numerical arrays, logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.</Description>
     <Copyright>Copyright 2017-2020 Alexander Luzgarev</Copyright>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
-    <PackageReleaseNotes>First release.</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/mahalex/MatFileHandler/releases/tag/v$(Version)</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Matlab</PackageTags>
     <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -19,6 +20,7 @@
     <Nullable>enable</Nullable>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
@@ -42,6 +44,6 @@
     <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="'$(TargetFramework)' == 'net461'" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath=""/>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 </Project>
