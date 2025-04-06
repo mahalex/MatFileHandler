@@ -9,7 +9,7 @@
     <Copyright>Copyright 2017-2020 Alexander Luzgarev</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/mahalex/MatFileHandler/releases/tag/v$(Version)</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/mahalex/MatFileHandler/releases/tag/v$(PackageVersion)</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Matlab</PackageTags>
     <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>

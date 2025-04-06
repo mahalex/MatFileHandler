@@ -1,6 +1,6 @@
 # MatFileHandler
 
-[![NuGet Version](https://img.shields.io/nuget/vpre/MatFileHandler?color=green)](https://www.nuget.org/packages/MatFileHandler/)
+[![NuGet Version](https://img.shields.io/nuget/vpre/MatFileHandler?color=green)](https://www.nuget.org/packages/MatFileHandler/absoluteLatest)
 
 MatFileHandler is a .NET library for reading and writing MATLAB .mat files
 (of so-called "Level 5"). MatFileHandler supports numerical arrays,
@@ -15,9 +15,8 @@ You can find (partial) technical description of MATLAB object data format
 This document briefly describes how to perform simple operations with .mat files
 using MatFileHandler.
 
-If you have questions and/or ideas, you can [file a new issue]
-(https://github.com/mahalex/MatFileHandler/issues/new) or contact me directly at
-<mahalex@gmail.com>.
+If you have questions and/or ideas, you can [file a new issue](https://github.com/mahalex/MatFileHandler/issues/new)
+or contact me directly at <mahalex@gmail.com>.
 
 ## Changelog
 
@@ -205,7 +204,7 @@ classdef Point
     end
 end
 ```
-We omit any methods (and constructos) such a class might have, because they are
+We omit any methods (and constructors) such a class might have, because they are
 not stored when you save an object of a class into a `.mat` file.
 
 Imagine that you have a `1x2 Point` object array `p` (an array of two points)
