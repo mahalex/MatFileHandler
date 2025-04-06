@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
+	<LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\MatFileHandler.ruleset</CodeAnalysisRuleSet>
