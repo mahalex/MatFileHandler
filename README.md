@@ -1,6 +1,6 @@
 # MatFileHandler
 
-[![NuGet Version](https://img.shields.io/nuget/vpre/MatFileHandler?color=green)](https://www.nuget.org/packages/MatFileHandler/)
+[![NuGet Version](https://img.shields.io/nuget/vpre/MatFileHandler?color=green)](https://www.nuget.org/packages/MatFileHandler/absoluteLatest)
 
 MatFileHandler is a .NET library for reading and writing MATLAB .mat files
 (of so-called "Level 5"). MatFileHandler supports numerical arrays,
