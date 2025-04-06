@@ -8,15 +8,15 @@ namespace MatFileHandler.Tests
     /// <summary>
     /// A stream which wraps another stream and only reads one byte at a time.
     /// </summary>
-    internal class PartialReadStream : Stream
+    internal class PartialUnseekableReadStream : Stream
     {
         private readonly Stream _baseStream;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PartialReadStream"/> class.
+        /// Initializes a new instance of the <see cref="PartialUnseekableReadStream"/> class.
         /// </summary>
         /// <param name="baseStream">The stream to wrap.</param>
-        public PartialReadStream(Stream baseStream)
+        public PartialUnseekableReadStream(Stream baseStream)
         {
             _baseStream = baseStream;
         }
@@ -25,7 +25,7 @@ namespace MatFileHandler.Tests
         public override bool CanRead => _baseStream.CanRead;
 
         /// <inheritdoc/>
-        public override bool CanSeek => _baseStream.CanSeek;
+        public override bool CanSeek => false;
 
         /// <inheritdoc/>
         public override bool CanWrite => false;
@@ -36,8 +36,8 @@ namespace MatFileHandler.Tests
         /// <inheritdoc/>
         public override long Position
         {
-            get => _baseStream.Position;
-            set => _baseStream.Position = value;
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
@@ -55,13 +55,13 @@ namespace MatFileHandler.Tests
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return _baseStream.Seek(offset, origin);
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         public override void SetLength(long value)
         {
-            _baseStream.SetLength(value);
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc/>

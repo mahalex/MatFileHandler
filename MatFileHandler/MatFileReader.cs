@@ -28,7 +28,7 @@ namespace MatFileHandler
         /// <returns>Contents of the file.</returns>
         public IMatFile Read()
         {
-            using (var reader = new BinaryReader(Stream))
+            using (var reader = new BinaryReader(new PositionTrackingStream(Stream)))
             {
                 return Read(reader);
             }
