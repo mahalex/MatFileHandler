@@ -6,69 +6,54 @@ using System.IO;
 namespace MatFileHandler.Tests
 {
     /// <summary>
-    /// A stream which wraps another stream and only reads one byte at a time,
-    /// while forbidding seeking in it.
+    /// A stream which wraps another stream and forbids seeking in it.
     /// </summary>
-    internal class PartialUnseekableReadStream : Stream
+    internal class UnseekableWriteStream : Stream
     {
-        private readonly Stream _baseStream;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PartialUnseekableReadStream"/> class.
-        /// </summary>
-        /// <param name="baseStream">The stream to wrap.</param>
-        public PartialUnseekableReadStream(Stream baseStream)
+        public UnseekableWriteStream(Stream baseStream)
         {
             _baseStream = baseStream;
         }
 
-        /// <inheritdoc/>
-        public override bool CanRead => _baseStream.CanRead;
+        private readonly Stream _baseStream;
 
-        /// <inheritdoc/>
+        public override bool CanRead => false;
+
         public override bool CanSeek => false;
 
-        /// <inheritdoc/>
-        public override bool CanWrite => false;
+        public override bool CanWrite => _baseStream.CanWrite;
 
-        /// <inheritdoc/>
         public override long Length => _baseStream.Length;
 
-        /// <inheritdoc/>
         public override long Position
         {
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
 
-        /// <inheritdoc/>
         public override void Flush()
         {
             _baseStream.Flush();
         }
 
-        /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _baseStream.Read(buffer, offset, Math.Min(1, count));
+            throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
             throw new NotSupportedException();
         }
 
-        /// <inheritdoc/>
         public override void SetLength(long value)
         {
             throw new NotSupportedException();
         }
 
-        /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            _baseStream.Write(buffer, offset, count);
         }
 
         /// <inheritdoc/>

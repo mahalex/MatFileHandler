@@ -55,7 +55,15 @@ namespace MatFileHandler
                     switch (_options.UseCompression)
                     {
                         case CompressionUsage.Always:
-                            WriteCompressedVariable(writer, variable);
+                            if (Stream.CanSeek)
+                            {
+                                WriteCompressedVariableToSeekableStream(writer, variable);
+                            }
+                            else
+                            {
+                                WriteCompressedVariableToUnseekableStream(writer, variable);
+                            }
+
                             break;
                         case CompressionUsage.Never:
                             WriteVariable(writer, variable);
@@ -125,6 +133,12 @@ namespace MatFileHandler
             {
                 WriteTag(writer, new Tag(type, data.Length));
                 writer.Write(data);
+                var rem = data.Length % 8;
+                if (rem > 0)
+                {
+                    var padding = new byte[8 - rem];
+                    writer.Write(padding);
+                }
             }
             else
             {
@@ -136,7 +150,6 @@ namespace MatFileHandler
                     writer.Write(padding);
                 }
             }
-            WritePadding(writer);
         }
 
         private void WriteDimensions(BinaryWriter writer, int[] dimensions)
@@ -393,7 +406,11 @@ namespace MatFileHandler
             return new ArrayFlags(ArrayType.MxChar, isGlobal ? Variable.IsGlobal : 0);
         }
 
-        private void WriteWrappingContents<T>(BinaryWriter writer, T array, Action<BinaryWriter> writeContents)
+        private void WriteWrappingContents<T>(
+            BinaryWriter writer,
+            T array,
+            Action<FakeWriter> lengthCalculator,
+            Action<BinaryWriter> writeContents)
             where T : IArray
         {
             if (array.IsEmpty)
@@ -401,16 +418,12 @@ namespace MatFileHandler
                 WriteTag(writer, new Tag(DataType.MiMatrix, 0));
                 return;
             }
-            using (var contents = new MemoryStream())
-            {
-                using (var contentsWriter = new BinaryWriter(contents))
-                {
-                    writeContents(contentsWriter);
-                    WriteTag(writer, new Tag(DataType.MiMatrix, (int)contents.Length));
-                    contents.Position = 0;
-                    contents.CopyTo(writer.BaseStream);
-                }
-            }
+
+            var fakeWriter = new FakeWriter();
+            lengthCalculator(fakeWriter);
+            var calculatedLength = fakeWriter.Position;
+            WriteTag(writer, new Tag(DataType.MiMatrix, calculatedLength));
+            writeContents(writer);
         }
 
         private void WriteNumericalArrayContents(BinaryWriter writer, IArray array, string name, bool isGlobal)
@@ -430,6 +443,7 @@ namespace MatFileHandler
             WriteWrappingContents(
                 writer,
                 numericalArray,
+                fakeWriter => fakeWriter.WriteNumericalArrayContents(numericalArray, name),
                 contentsWriter => { WriteNumericalArrayContents(contentsWriter, numericalArray, name, isGlobal); });
         }
 
@@ -447,6 +461,7 @@ namespace MatFileHandler
             WriteWrappingContents(
                 writer,
                 charArray,
+                fakeWriter => fakeWriter.WriteCharArrayContents(charArray, name),
                 contentsWriter => { WriteCharArrayContents(contentsWriter, charArray, name, isGlobal); });
         }
 
@@ -520,11 +535,12 @@ namespace MatFileHandler
         }
 
         private void WriteSparseArray<T>(BinaryWriter writer, ISparseArrayOf<T> sparseArray, string name, bool isGlobal)
-            where T : struct, IEquatable<T>
+            where T : unmanaged, IEquatable<T>
         {
             WriteWrappingContents(
                 writer,
                 sparseArray,
+                fakeWriter => fakeWriter.WriteSparseArrayContents(sparseArray, name),
                 contentsWriter => { WriteSparseArrayContents(contentsWriter, sparseArray, name, isGlobal); });
         }
 
@@ -575,6 +591,7 @@ namespace MatFileHandler
             WriteWrappingContents(
                 writer,
                 structureArray,
+                fakeWriter => fakeWriter.WriteStructureArrayContents(structureArray, name),
                 contentsWriter => { WriteStructureArrayContents(contentsWriter, structureArray, name, isGlobal); });
         }
 
@@ -599,6 +616,7 @@ namespace MatFileHandler
             WriteWrappingContents(
                 writer,
                 cellArray,
+                fakeWriter => fakeWriter.WriteCellArrayContents(cellArray, name),
                 contentsWriter => { WriteCellArrayContents(contentsWriter, cellArray, name, isGlobal); });
         }
 
@@ -635,7 +653,33 @@ namespace MatFileHandler
             WriteArray(writer, variable.Value, variable.Name, variable.IsGlobal);
         }
 
-        private void WriteCompressedVariable(BinaryWriter writer, IVariable variable)
+        private void WriteCompressedVariableToSeekableStream(BinaryWriter writer, IVariable variable)
+        {
+            var position = writer.BaseStream.Position;
+            WriteTag(writer, new Tag(DataType.MiCompressed, 0));
+            writer.Write((byte)0x78);
+            writer.Write((byte)0x9c);
+            int compressedLength;
+            uint crc;
+            var before = writer.BaseStream.Position;
+            using (var compressionStream = new DeflateStream(writer.BaseStream, CompressionMode.Compress, leaveOpen: true))
+            {
+                using var checksumStream = new ChecksumCalculatingStream(compressionStream);
+                using var internalWriter = new BinaryWriter(checksumStream, Encoding.UTF8, leaveOpen: true);
+                WriteVariable(internalWriter, variable);
+                crc = checksumStream.GetCrc();
+            }
+
+            var after = writer.BaseStream.Position;
+            compressedLength = (int)(after - before) + 6;
+
+            writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
+            writer.BaseStream.Position = position;
+            WriteTag(writer, new Tag(DataType.MiCompressed, compressedLength));
+            writer.BaseStream.Seek(0, SeekOrigin.End);
+        }
+
+        private void WriteCompressedVariableToUnseekableStream(BinaryWriter writer, IVariable variable)
         {
             using (var compressedStream = new MemoryStream())
             {
